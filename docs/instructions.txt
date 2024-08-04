@@ -1,0 +1,2 @@
+- General instructions
+    - `mov` for moving values to a memory address

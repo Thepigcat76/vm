@@ -1,0 +1,7 @@
+- Stack register
+    - Register stack pointer: `rsp`
+    - Register (stack) base pointer: `rbp`
+
+- Argument register
+
+- General purpose register
