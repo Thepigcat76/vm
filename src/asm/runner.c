@@ -1,0 +1,43 @@
+#include "runner.h"
+#include <stdint.h>
+#include <stdio.h>
+
+static Value op_to_val(Operand *op) {
+  switch (op->type) {
+  case AST_OP_NUMBER:
+    return (Value) {.type = VAL_LITERAL, .data = {.lit = op->var.number}};
+  case AST_OP_REGISTER:
+    return (Value){.type = VAL_REGISTER, .data = {.lit = op->var.reg}};
+  }
+}
+
+static void run_ins(VirtualMachine *vm, CasmElement elem) {
+  switch (elem.type) {
+  case AST_LABEL:
+    break;
+  case AST_INSTRUCTION: {
+    switch (elem.var.ins.type) {
+    case AST_INS_MOV: {
+      move(vm, op_to_val(&elem.var.ins.args[0]), DEST_REG(RA0));
+      break;
+    }
+    case AST_INS_SYSCALL: {
+      syscall(vm);
+      break;
+    }
+    }
+  }
+  }
+}
+
+// clang-format off
+void run_asm(vec_gt(CasmElement) *elems) {
+  // clang-format on
+  uint8_t stack[STACK_SIZE] = {0};
+  uint64_t regs[REG_AMOUNT] = {0};
+  VirtualMachine vm = {.regs = regs, .stack = stack};
+
+  for (size_t i = 0; i < elems->length; i++) {
+    run_ins(&vm, vec_get(CasmElement, elems, i));
+  }
+}

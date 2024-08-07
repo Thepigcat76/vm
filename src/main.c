@@ -1,13 +1,14 @@
-#include "vm.h"
+#include "asm/runner.h"
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 
-void int_to_str(int num, char *str);
+static char *read_file_to_string(const char *filename);
 
 void run(size_t regs_size, size_t stack_size) {
   uint64_t regs[regs_size];
   uint8_t stack[stack_size];
-  
+
   VirtualMachine vm = {.regs = regs, .stack = stack};
 
   // Allocate string on the stack
@@ -23,58 +24,79 @@ void run(size_t regs_size, size_t stack_size) {
   move(&vm, VAL_LIT(stack_ptr), DEST_REG(RA1));
   move(&vm, VAL_LIT(5), DEST_REG(RA2));
   syscall(&vm);
-
-  add(&vm, 100, 200, DEST_REG(RA0));
-  char buf[4];
-  int_to_str(vm.regs[RA0], buf);
-
-  for (uint8_t i = 0; i < 3; i++) {
-    move(&vm, VAL_LIT(buf[i]), DEST_ADDR(stack_ptr + i));
-  }
-
-  // Syscall to print string
-  move(&vm, VAL_LIT(SC_PRINT), DEST_REG(RA0));
-  move(&vm, VAL_LIT(stack_ptr), DEST_REG(RA1));
-  move(&vm, VAL_LIT(3), DEST_REG(RA2));
-  syscall(&vm);
 }
 
-int main(int argc, char **argv) { run(100, 100); }
+const char *to_string(CasmElementType type) {
+  switch (type) {
+  case AST_LABEL:
+    return "LABEL";
+  case AST_INSTRUCTION:
+    return "INSTRUCTION";
+  default:
+    return "AA";
+  }
+}
 
-void int_to_str(int num, char *str) {
-  int i = 0, j, len, isNegative = 0;
+int main(int argc, char **argv) {
+  // run(100, 100);
+  char *asm_file = read_file_to_string("main.casm");
+  size_t asm_len = strlen(asm_file);
 
-  // Handle 0 explicitly
-  if (num == 0) {
-    str[i++] = '0';
-    str[i] = '\0';
-    return;
+  Lexer lexer = {.input = asm_file, .cur_pos = 0};
+  Token cur_tok = tokenize(&lexer);
+  Token peek_tok = tokenize(&lexer);
+  Parser parser = {
+      .lexer = &lexer,
+      .cur_tok = cur_tok,
+      .peek_tok = peek_tok,
+  };
+
+  CasmElement elem = parse(&parser);
+  CasmElement elem1 = parse(&parser);
+  const char *str = to_string(elem.type);
+  const char *str1 = to_string(elem1.type);
+  printf("Element: %s\n", str);
+  printf("Element: %s\n", str1);
+}
+
+static char *read_file_to_string(const char *filename) {
+  FILE *file = fopen(filename, "rb");
+  if (file == NULL) {
+    perror("Error opening file");
+    return NULL;
   }
 
-  // Handle negative numbers
-  if (num < 0) {
-    isNegative = 1;
-    num = -num; // Convert to positive for further processing
+  // Seek to the end of the file to get the file size
+  fseek(file, 0, SEEK_END);
+  long file_size = ftell(file);
+  fseek(file, 0, SEEK_SET); // Go back to the beginning of the file
+
+  if (file_size < 0) {
+    perror("Error determining file size");
+    fclose(file);
+    return NULL;
   }
 
-  // Extract digits and store in reverse order
-  while (num != 0) {
-    str[i++] = (num % 10) + '0'; // Get the last digit and convert to character
-    num /= 10;                   // Remove the last digit
+  // Allocate memory for the file content + null terminator
+  char *buffer = (char *)malloc(file_size + 1);
+  if (buffer == NULL) {
+    perror("Error allocating memory");
+    fclose(file);
+    return NULL;
   }
 
-  // Add negative sign if needed
-  if (isNegative) {
-    str[i++] = '-';
+  // Read the file content into the buffer
+  size_t read_size = fread(buffer, 1, file_size, file);
+  if (read_size != file_size) {
+    perror("Error reading file");
+    free(buffer);
+    fclose(file);
+    return NULL;
   }
 
-  str[i] = '\0'; // Null-terminate the string
+  // Null-terminate the string
+  buffer[file_size] = '\0';
 
-  // Reverse the string
-  len = i;
-  for (j = 0; j < len / 2; j++) {
-    char temp = str[j];
-    str[j] = str[len - j - 1];
-    str[len - j - 1] = temp;
-  }
+  fclose(file);
+  return buffer;
 }

@@ -1,0 +1,3 @@
+_start:
+    mov 100, ra0
+    syscall

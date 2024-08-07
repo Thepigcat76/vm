@@ -4,13 +4,13 @@
 #include <stdlib.h>
 
 static void syscall_exit(VirtualMachine *vm) {
-  uint64_t exit_code = vm->regs[RA1];
+  uint64_t exit_code = vm->regs[REG_RA1];
   exit(exit_code);
 }
 
 static void syscall_print(VirtualMachine *vm) {
-  uint64_t byte_ptr = vm->regs[RA1];
-  uint64_t byte_len = vm->regs[RA2];
+  uint64_t byte_ptr = vm->regs[REG_RA1];
+  uint64_t byte_len = vm->regs[REG_RA2];
 
   char msg[byte_len];
   for (uint64_t i = byte_ptr; i < byte_ptr + byte_len; i++) {
@@ -72,7 +72,7 @@ void move(VirtualMachine *vm, Value val, Dest dest) {
 }
 
 void syscall(VirtualMachine *vm) {
-  uint64_t syscall = vm->regs[RA0];
+  uint64_t syscall = vm->regs[REG_RA0];
   switch (syscall) {
   case SC_EXIT:
     syscall_exit(vm);

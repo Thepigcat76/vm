@@ -5,11 +5,11 @@
 #define STACK_SIZE 10000
 #define REG_AMOUNT 5
 
-#define RSP 0
-#define RA0 1
-#define RA1 2
-#define RA2 3
-#define RA3 4
+#define REG_RSP 0
+#define REG_RA0 1
+#define REG_RA1 2
+#define REG_RA2 3
+#define REG_RA3 4
 
 #define SC_EXIT 0
 #define SC_PRINT 1
@@ -37,13 +37,6 @@ typedef struct {
   uint64_t *regs;
 } VirtualMachine;
 
-
-typedef union {
-  uint8_t reg;
-  uint64_t addr;
-  uint8_t lit;
-} ValueData;
-
 typedef enum {
   VAL_REGISTER,
   VAL_ADDRESS,
@@ -51,15 +44,13 @@ typedef enum {
 } ValueType;
 
 typedef struct {
-  ValueData data;
+  union {
+    uint8_t reg;
+    uint64_t addr;
+    uint8_t lit;
+  } data;
   ValueType type;
 } Value;
-
-
-typedef union {
-  uint8_t reg;
-  uint64_t addr;
-} DestData;
 
 typedef enum {
   DEST_REGISTER,
@@ -67,7 +58,10 @@ typedef enum {
 } DestType;
 
 typedef struct {
-  DestData data;
+  union {
+    uint8_t reg;
+    uint64_t addr;
+  } data;
   DestType type;
 } Dest;
 
