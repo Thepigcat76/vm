@@ -2,6 +2,7 @@
 #include "asm/parser.h"
 #include "asm/runner.h"
 #include "vechack.h"
+#include "cli.h"
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
@@ -20,8 +21,9 @@ const char *to_string(CasmElementType type) {
 }
 
 int main(int argc, char **argv) {
+  char* file = parse_args(argc, argv);
   // run(100, 100);
-  char *asm_file = read_file_to_string("main.casm");
+  char *asm_file = read_file_to_string(file);
 
   Lexer lexer = {.input = asm_file, .cur_pos = 0};
 
