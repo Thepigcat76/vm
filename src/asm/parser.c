@@ -16,7 +16,9 @@ static void mem_swap(void *a, void *b, size_t size);
 static Operand parse_op(Parser *parser) {
   switch (parser->cur_tok.type) {
   case TOK_NUMBER: {
-    int32_t num = atoi(parser->cur_tok.lit);
+    char *literal = parser->cur_tok.lit;
+    int32_t num = atoi(literal);
+    free(literal);
     return (Operand){.type = AST_OP_NUMBER, .var = {.number = num}};
   }
   case TOK_IDENT: {
@@ -33,6 +35,7 @@ static Operand parse_op(Parser *parser) {
     } else if (strcmp(str, "ra3") == 0) {
       reg = RA3;
     }
+    free(str);
     return (Operand) {.type = AST_OP_REGISTER, .var = {.reg = reg}};
   }
   default: {

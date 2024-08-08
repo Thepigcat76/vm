@@ -47,7 +47,6 @@ void run_asm(vec_gt(CasmElement) *elems) {
   VirtualMachine vm = {.regs = regs, .stack = stack};
 
   for (size_t i = 0; i < elems->length; i++) {
-    printf("Running asm\n");
     run_ins(&vm, vec_get(CasmElement, elems, i));
   }
 }
