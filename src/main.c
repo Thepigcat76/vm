@@ -25,6 +25,10 @@ int main(int argc, char **argv) {
   // run(100, 100);
   char *asm_file = read_file_to_string(file);
 
+  if (asm_file == NULL) {
+    return -1;
+  }
+
   Lexer lexer = {.input = asm_file, .cur_pos = 0};
 
   Parser parser = {.lexer = &lexer, .cur_tok = tokenize(&lexer), .peek_tok = tokenize(&lexer)};

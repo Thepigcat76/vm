@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "cli.h"
 
 void print_help(char* cmd) {
@@ -14,7 +15,7 @@ void print_help(char* cmd) {
 }
 
 void print_version() {
-    printf("VM project v%s by %s", PCK_VERSION, PCK_AUTHOR);
+    printf("VM project v%s by %s\n", PCK_VERSION, PCK_AUTHOR);
 }
 
 char* parse_args(int argc, char** argv) {
@@ -22,9 +23,9 @@ char* parse_args(int argc, char** argv) {
     
     if (argc == 1) {
         char* file = argv[1];
-        if (file == "-h" || file == "--help") {
+        if (strcmp(file, "-h") == 0 || strcmp(file, "--help") == 0) {
             print_help(argv[0]);
-        } else if (file == "-v" || file == "--version") {
+        } else if (strcmp(file, "-v") == 0 || strcmp(file, "--version") == 0) {
             print_version();
         } else {
             return file;
