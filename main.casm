@@ -1,4 +1,6 @@
 _start:
+    mov 9, ra3
+
     mov 0, ra0
-    mov 1, ra1
+    mov ra3, ra1
     syscall

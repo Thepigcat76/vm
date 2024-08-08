@@ -23,7 +23,7 @@ static void syscall_print(VirtualMachine *vm) {
 static void mov_to_reg(VirtualMachine *vm, Value val, uint8_t dest) {
   switch (val.type) {
   case VAL_REGISTER:
-    vm->regs[dest] = val.data.reg;
+    vm->regs[dest] = vm->regs[val.data.reg];
     break;
   case VAL_ADDRESS:
     vm->regs[dest] = val.data.addr;
@@ -37,7 +37,7 @@ static void mov_to_reg(VirtualMachine *vm, Value val, uint8_t dest) {
 static void mov_to_addr(VirtualMachine *vm, Value val, uint64_t dest) {
   switch (val.type) {
   case VAL_REGISTER:
-    vm->stack[dest] = val.data.reg;
+    vm->stack[dest] = vm->regs[val.data.reg];
     break;
   case VAL_ADDRESS:
     vm->stack[dest] = val.data.addr;

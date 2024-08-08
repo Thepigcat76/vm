@@ -6,7 +6,6 @@
 // Function to create a new vector
 vec_t *vec_new() {
   vec_t *vec = (vec_t *)malloc(sizeof(vec_t));
-  // TODO: Might want to use calloc for this
   vec->data = (CasmElement *)malloc(sizeof(CasmElement));
   vec->capacity = 1;
   vec->length = 0;

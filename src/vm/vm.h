@@ -65,8 +65,6 @@ typedef struct {
   DestType type;
 } Dest;
 
-VirtualMachine new_vm();
-
 void add(VirtualMachine *vm, uint64_t val0, uint64_t val1, Dest dest);
 
 void move(VirtualMachine *vm, Value val, Dest dest);
