@@ -1,9 +1,13 @@
 #include "parser.h"
+#include "ast.h"
 #include "lexer.h"
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "surtils/src/generics/vec.h"
+
+DEFINE_VEC(CasmElement);
 
 static void next_tok(Parser *parser);
 
@@ -65,12 +69,12 @@ static CasmElement parse_label(Parser *parser) {
   return (CasmElement){.type = AST_LABEL, .var = {.label = {.name = name}}};
 }
 
-vec_t *parse_all(Parser *parser) {
-  vec_t *vec = vec_new();
+vec_gt(CasmElement) *parse_all(Parser *parser) {
+  vec_gt(CasmElement) *vec = vec_new(CasmElement);
   size_t input_len = strlen(parser->lexer->input);
   while (parser->cur_tok.type != TOK_ILLEGAL) {
     CasmElement elem = parse(parser);
-    vec_push_back(vec, elem);
+    vec_push_back(CasmElement, vec, elem);
   }
   return vec;
 }

@@ -1,7 +1,6 @@
 #include "asm/lexer.h"
 #include "asm/parser.h"
 #include "asm/runner.h"
-#include "vechack.h"
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
@@ -27,7 +26,7 @@ int main(int argc, char **argv) {
 
   Parser parser = {.lexer = &lexer, .cur_tok = tokenize(&lexer), .peek_tok = tokenize(&lexer)};
 
-  vec_t *elems = parse_all(&parser);
+  vec_gt(CasmElement) *elems = parse_all(&parser);
 
   run_asm(elems);
 }
