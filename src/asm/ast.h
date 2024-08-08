@@ -12,6 +12,8 @@ typedef enum {
   RA3,
 } Register;
 
+char* reg_to_string(int num);
+
 typedef enum {
   AST_OP_NUMBER,
   AST_OP_REGISTER,

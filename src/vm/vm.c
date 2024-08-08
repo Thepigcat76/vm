@@ -83,10 +83,12 @@ void syscall(VirtualMachine *vm) {
   }
 }
 
+#include "asm/ast.h"
+
 void dump(VirtualMachine vm) {
   printf("------ REGISTERS ------\n");
   for (int num_reg = 0; num_reg < REG_AMOUNT; num_reg++) {
-    printf("ra%d: %ld\n", num_reg, vm.regs[num_reg]);
+    printf("%s: %ld\n", reg_to_string(num_reg), vm.regs[num_reg]);
   }
   printf("------ REGISTERS ------\n");
 }
