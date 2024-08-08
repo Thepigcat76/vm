@@ -1,4 +1,5 @@
-#include "asm/runner.h"
+#include "asm/parser.h"
+#include "vm/vm.h"
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>

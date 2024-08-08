@@ -64,12 +64,12 @@ static CasmElement parse_label(Parser *parser) {
   return (CasmElement){.type = AST_LABEL, .var = {.label = {.name = name}}};
 }
 
-vec_gt(CasmElement) * parse_all(Parser *parser) {
-  vec_gt(CasmElement) *vec = vec_new(CasmElement);
+vec_t * parse_all(Parser *parser) {
+  vec_t *vec = vec_new();
   size_t input_len = strlen(parser->lexer->input);
   while (parser->lexer->cur_pos < input_len) {
     CasmElement elem = parse(parser);
-    vec_push_back(CasmElement, vec, elem);
+    vec_push_back(vec, elem);
   }
   return vec;
 }

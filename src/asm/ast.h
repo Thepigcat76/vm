@@ -1,7 +1,5 @@
 #pragma once
 
-#include "../vm/vm.h"
-#include "/home/thepigcat/.surtur/deps/surtils/src/generics/vec.h"
 #include <stdint.h>
 
 #define OPERANDS 3
@@ -53,5 +51,3 @@ typedef struct {
     Instruction ins;
   } var;
 } CasmElement;
-
-DEFINE_VEC(CasmElement);

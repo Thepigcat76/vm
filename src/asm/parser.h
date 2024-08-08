@@ -2,6 +2,7 @@
 
 #include "ast.h"
 #include "lexer.h"
+#include "../vechack.h"
 
 typedef struct {
   Lexer *lexer;
@@ -10,6 +11,6 @@ typedef struct {
   Token peek_tok;
 } Parser;
 
-vec_gt(CasmElement) *parse_all(Parser *parser);
+vec_t *parse_all(Parser *parser);
 
 CasmElement parse(Parser *parser);
