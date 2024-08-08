@@ -6,9 +6,18 @@
 static Value op_to_val(Operand *op) {
   switch (op->type) {
   case AST_OP_NUMBER:
-    return (Value) {.type = VAL_LITERAL, .data = {.lit = op->var.number}};
+    return (Value){.type = VAL_LITERAL, .data = {.lit = op->var.number}};
   case AST_OP_REGISTER:
     return (Value){.type = VAL_REGISTER, .data = {.lit = op->var.reg}};
+  }
+}
+
+static Dest op_to_dest(Operand *op) {
+  switch (op->type) {
+  case AST_OP_REGISTER:
+    return (Dest){.type = DEST_REGISTER, .data = {.reg = op->var.reg}};
+  default:
+    exit(1);
   }
 }
 
@@ -19,7 +28,8 @@ static void run_ins(VirtualMachine *vm, CasmElement elem) {
   case AST_INSTRUCTION: {
     switch (elem.var.ins.type) {
     case AST_INS_MOV: {
-      move(vm, op_to_val(&elem.var.ins.args[0]), DEST_REG(RA0));
+      move(vm, op_to_val(&elem.var.ins.args[0]),
+           op_to_dest(&elem.var.ins.args[1]));
       break;
     }
     case AST_INS_SYSCALL: {

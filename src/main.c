@@ -1,31 +1,12 @@
+#include "asm/lexer.h"
 #include "asm/parser.h"
-#include "vm/vm.h"
+#include "asm/runner.h"
+#include "vechack.h"
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 
 static char *read_file_to_string(const char *filename);
-
-void run(size_t regs_size, size_t stack_size) {
-  uint64_t regs[regs_size];
-  uint8_t stack[stack_size];
-
-  VirtualMachine vm = {.regs = regs, .stack = stack};
-
-  // Allocate string on the stack
-  uint64_t stack_ptr = vm.regs[RSP];
-  move(&vm, VAL_LIT('H'), DEST_ADDR(stack_ptr));
-  move(&vm, VAL_LIT('e'), DEST_ADDR(stack_ptr + 1));
-  move(&vm, VAL_LIT('l'), DEST_ADDR(stack_ptr + 2));
-  move(&vm, VAL_LIT('l'), DEST_ADDR(stack_ptr + 3));
-  move(&vm, VAL_LIT('o'), DEST_ADDR(stack_ptr + 4));
-
-  // Syscall to print string
-  move(&vm, VAL_LIT(SC_PRINT), DEST_REG(RA0));
-  move(&vm, VAL_LIT(stack_ptr), DEST_REG(RA1));
-  move(&vm, VAL_LIT(5), DEST_REG(RA2));
-  syscall(&vm);
-}
 
 const char *to_string(CasmElementType type) {
   switch (type) {
@@ -41,23 +22,14 @@ const char *to_string(CasmElementType type) {
 int main(int argc, char **argv) {
   // run(100, 100);
   char *asm_file = read_file_to_string("main.casm");
-  size_t asm_len = strlen(asm_file);
 
   Lexer lexer = {.input = asm_file, .cur_pos = 0};
-  Token cur_tok = tokenize(&lexer);
-  Token peek_tok = tokenize(&lexer);
-  Parser parser = {
-      .lexer = &lexer,
-      .cur_tok = cur_tok,
-      .peek_tok = peek_tok,
-  };
 
-  CasmElement elem = parse(&parser);
-  CasmElement elem1 = parse(&parser);
-  const char *str = to_string(elem.type);
-  const char *str1 = to_string(elem1.type);
-  printf("Element: %s\n", str);
-  printf("Element: %s\n", str1);
+  Parser parser = {.lexer = &lexer, .cur_tok = tokenize(&lexer), .peek_tok = tokenize(&lexer)};
+
+  vec_t *elems = parse_all(&parser);
+
+  run_asm(elems);
 }
 
 static char *read_file_to_string(const char *filename) {

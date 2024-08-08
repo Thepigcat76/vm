@@ -1,4 +1,5 @@
 #include "parser.h"
+#include "lexer.h"
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -67,7 +68,7 @@ static CasmElement parse_label(Parser *parser) {
 vec_t * parse_all(Parser *parser) {
   vec_t *vec = vec_new();
   size_t input_len = strlen(parser->lexer->input);
-  while (parser->lexer->cur_pos < input_len) {
+  while (parser->cur_tok.type != TOK_ILLEGAL) {
     CasmElement elem = parse(parser);
     vec_push_back(vec, elem);
   }
