@@ -71,4 +71,7 @@ void move(VirtualMachine *vm, Value val, Dest dest);
 
 void syscall(VirtualMachine *vm);
 
-void dump(VirtualMachine vm);
+void dump(VirtualMachine *vm);
+
+
+static char* reg_to_string(int num);

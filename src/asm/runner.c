@@ -28,7 +28,6 @@ static void run_ins(VirtualMachine *vm, CasmElement elem) {
   case AST_INSTRUCTION: {
     switch (elem.var.ins.type) {
       case AST_INS_MOV: {
-        printf("mov");
         Value val = op_to_val(&elem.var.ins.args[0]);
         move(vm, val, op_to_dest(&elem.var.ins.args[1]));
         break;
@@ -51,5 +50,5 @@ void run_asm(vec_t *elems) {
     run_ins(&vm, vec_get(elems, i));
   }
 
-  dump(vm);
+  dump(&vm);
 }
