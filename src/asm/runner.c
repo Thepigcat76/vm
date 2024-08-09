@@ -41,13 +41,13 @@ static void run_ins(VirtualMachine *vm, CasmElement elem) {
   }
 }
 
-void run_asm(vec_t *elems) {
+void run_asm(vec_gt(CasmElement) *elems) {
   uint8_t stack[STACK_SIZE] = {0};
   uint64_t regs[REG_AMOUNT] = {0};
   VirtualMachine vm = {.regs = regs, .stack = stack};
 
   for (size_t i = 0; i < elems->length; i++) {
-    run_ins(&vm, vec_get(elems, i));
+    run_ins(&vm, vec_get(CasmElement, elems, i));
   }
 
   dump(&vm);

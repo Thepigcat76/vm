@@ -1,7 +1,4 @@
-#include "asm/lexer.h"
-#include "asm/parser.h"
 #include "asm/runner.h"
-#include "vechack.h"
 #include "cli.h"
 #include <stdint.h>
 #include <stdio.h>
@@ -33,9 +30,13 @@ int main(int argc, char **argv) {
 
   Parser parser = {.lexer = &lexer, .cur_tok = tokenize(&lexer), .peek_tok = tokenize(&lexer)};
 
-  vec_t *elems = parse_all(&parser);
+  vec_gt(CasmElement) *elems = parse_all(&parser);
 
   run_asm(elems);
+
+  free(asm_file);
+
+  vec_free(CasmElement, elems);
 }
 
 static char *read_file_to_string(const char *filename) {
