@@ -82,3 +82,22 @@ void syscall(VirtualMachine *vm) {
     break;
   }
 }
+
+static char* reg_to_string(int num) {
+    switch (num) {
+        case 0: return "rsp";
+        case 1: return "ra0";
+        case 2: return "ra1";
+        case 3: return "ra2";
+        case 4: return "ra3";
+        default: return "unknown";
+    }
+}
+
+void dump(VirtualMachine *vm) {
+  printf("------ REGISTERS ------\n");
+  for (int num_reg = 0; num_reg < REG_AMOUNT; num_reg++) {
+    printf("%s: %ld\n", reg_to_string(num_reg), vm->regs[num_reg]);
+  }
+  printf("------ REGISTERS ------\n");
+}

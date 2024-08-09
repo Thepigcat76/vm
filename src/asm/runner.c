@@ -27,15 +27,15 @@ static void run_ins(VirtualMachine *vm, CasmElement elem) {
     break;
   case AST_INSTRUCTION: {
     switch (elem.var.ins.type) {
-    case AST_INS_MOV: {
-      Value val = op_to_val(&elem.var.ins.args[0]);
-      move(vm, val, op_to_dest(&elem.var.ins.args[1]));
-      break;
-    }
-    case AST_INS_SYSCALL: {
-      syscall(vm);
-      break;
-    }
+      case AST_INS_MOV: {
+        Value val = op_to_val(&elem.var.ins.args[0]);
+        move(vm, val, op_to_dest(&elem.var.ins.args[1]));
+        break;
+      }
+      case AST_INS_SYSCALL: {
+        syscall(vm);
+        break;
+      }
     }
   }
   }
@@ -49,4 +49,6 @@ void run_asm(vec_gt(CasmElement) *elems) {
   for (size_t i = 0; i < elems->length; i++) {
     run_ins(&vm, vec_get(CasmElement, elems, i));
   }
+
+  dump(&vm);
 }

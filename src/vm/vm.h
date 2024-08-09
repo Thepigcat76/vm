@@ -70,3 +70,8 @@ void add(VirtualMachine *vm, uint64_t val0, uint64_t val1, Dest dest);
 void move(VirtualMachine *vm, Value val, Dest dest);
 
 void syscall(VirtualMachine *vm);
+
+void dump(VirtualMachine *vm);
+
+
+char* reg_to_string(int num);
