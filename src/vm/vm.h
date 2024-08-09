@@ -74,4 +74,4 @@ void syscall(VirtualMachine *vm);
 void dump(VirtualMachine *vm);
 
 
-static char* reg_to_string(int num);
+char* reg_to_string(int num);
