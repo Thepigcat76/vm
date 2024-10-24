@@ -20,34 +20,6 @@ static void syscall_print(VirtualMachine *vm) {
   puts(msg);
 }
 
-static void mov_to_reg(VirtualMachine *vm, Value val, uint8_t dest) {
-  switch (val.type) {
-  case VAL_REGISTER:
-    vm->regs[dest] = vm->regs[val.data.reg];
-    break;
-  case VAL_ADDRESS:
-    vm->regs[dest] = val.data.addr;
-    break;
-  case VAL_LITERAL:
-    vm->regs[dest] = val.data.lit;
-    break;
-  }
-}
-
-static void mov_to_addr(VirtualMachine *vm, Value val, uint64_t dest) {
-  switch (val.type) {
-  case VAL_REGISTER:
-    vm->stack[dest] = vm->regs[val.data.reg];
-    break;
-  case VAL_ADDRESS:
-    vm->stack[dest] = val.data.addr;
-    break;
-  case VAL_LITERAL:
-    vm->stack[dest] = val.data.lit;
-    break;
-  }
-}
-
 void add(VirtualMachine *vm, uint64_t val0, uint64_t val1, Dest dest) {
   uint64_t res = val0 + val1;
   switch (dest.type) {
@@ -60,15 +32,12 @@ void add(VirtualMachine *vm, uint64_t val0, uint64_t val1, Dest dest) {
   }
 }
 
-void move(VirtualMachine *vm, Value val, Dest dest) {
-  switch (dest.type) {
-  case DEST_REGISTER:
-    mov_to_reg(vm, val, dest.data.reg);
-    break;
-  case DEST_ADDRESS:
-    mov_to_addr(vm, val, dest.data.addr);
-    break;
-  }
+void mov_i2r(VirtualMachine *vm, uint8_t immediate, uint8_t reg) {
+  vm->regs[reg] = immediate;
+}
+
+void mov_r2r(VirtualMachine *vm, uint8_t reg0, uint8_t reg1) {
+  vm->regs[reg1] = vm->regs[reg0];
 }
 
 void syscall(VirtualMachine *vm) {

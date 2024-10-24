@@ -1,5 +1,10 @@
+#include "asm/compiler.h"
 #include "asm/runner.h"
 #include "cli.h"
+
+#include "surtils/src/generics/set.h"
+
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
@@ -17,22 +22,48 @@ const char *to_string(CasmElementType type) {
   }
 }
 
+static bool cmp_str(const string_t *s1, const string_t *s2) {
+  return strcmp(*s1, *s2);
+}
+
+static void print_byte_code(Compiler *compiler) {
+  for (size_t i = 0; i < compiler->bytesptr; i++) {
+    printf("Ins: %d\n", compiler->bytes[i]);
+  }
+}
+
 int main(int argc, char **argv) {
-  char* file = parse_args(argc, argv);
-  // run(100, 100);
+  char *file = parse_args(argc, argv);
+
+  if (file == NULL) {
+    return 0;
+  }
+
   char *asm_file = read_file_to_string(file);
 
   if (asm_file == NULL) {
-    return -1;
+    return 0;
   }
 
   Lexer lexer = {.input = asm_file, .cur_pos = 0};
 
-  Parser parser = {.lexer = &lexer, .cur_tok = tokenize(&lexer), .peek_tok = tokenize(&lexer)};
+  Parser parser = {.lexer = &lexer,
+                   .cur_tok = tokenize(&lexer),
+                   .peek_tok = tokenize(&lexer)};
 
   vec_gt(CasmElement) *elems = parse_all(&parser);
 
-  run_asm(elems);
+  uint8_t bytes[2000] = {0};
+
+  Compiler compiler = {.elements = elems, .bytes = bytes, .bytesptr = 0};
+
+  compile(&compiler);
+
+  print_byte_code(&compiler);
+
+  Runner runner = {.labels = set_new_cmp(string_t, cmp_str)};
+
+  run_asm(&runner, compiler.bytes, compiler.bytesptr);
 
   free(asm_file);
 

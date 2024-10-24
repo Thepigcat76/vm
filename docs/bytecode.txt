@@ -1,0 +1,3 @@
+- Syscall:                   0
+- Mov Immediate to register: 1
+- Mov Register to register:  2

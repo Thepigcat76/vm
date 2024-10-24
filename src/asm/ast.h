@@ -4,6 +4,8 @@
 
 #define OPERANDS 3
 
+#define make_node(name, fields) typedef struct fields name;
+
 typedef enum {
   RSP,
   RA0,
@@ -12,37 +14,34 @@ typedef enum {
   RA3,
 } Register;
 
-typedef enum {
-  AST_OP_NUMBER,
-  AST_OP_REGISTER,
-} OperandType;
+make_node(MovI2RIns, {
+  uint8_t immediate;
+  Register reg;
+});
+
+make_node(MovR2RIns, {
+  Register reg0;
+  Register reg1;
+});
 
 typedef struct {
-  OperandType type;
+  enum {
+    AST_INS_MOV_I2R,
+    AST_INS_MOV_R2R,
+    AST_INS_SYSCALL,
+  } type;
   union {
-    int32_t number;
-    Register reg;
+    MovI2RIns mov_i2r;
+    MovR2RIns mov_r2r;
   } var;
-} Operand;
-
-typedef enum {
-  AST_INS_MOV,
-  AST_INS_SYSCALL,
-} InstructionType;
-
-typedef struct {
-  char *name;
-} Label;
-
-typedef struct {
-  InstructionType type;
-  Operand args[3];
 } Instruction;
 
 typedef enum {
   AST_LABEL,
   AST_INSTRUCTION,
 } CasmElementType;
+
+make_node(Label, { char *name; });
 
 typedef struct {
   CasmElementType type;
