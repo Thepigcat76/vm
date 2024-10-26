@@ -1,42 +1,62 @@
-#include "asm/runner.h"
+#include "asm/lib.h"
+#include "bin/lib.h"
 #include "cli.h"
+#include "shared.h"
+#include "vm/dbg.h"
+#include "vm/runner.h"
+#include "vm/vm.h"
+
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 
 static char *read_file_to_string(const char *filename);
 
-const char *to_string(CasmElementType type) {
-  switch (type) {
-  case AST_LABEL:
-    return "LABEL";
-  case AST_INSTRUCTION:
-    return "INSTRUCTION";
-  default:
-    return "AA";
-  }
-}
-
 int main(int argc, char **argv) {
-  char* file = parse_args(argc, argv);
-  // run(100, 100);
-  char *asm_file = read_file_to_string(file);
+  /*
+  struct args arguments = parse_args(argc, argv);
+
+  char *asm_file = read_file_to_string(arguments.filename);
 
   if (asm_file == NULL) {
-    return -1;
+    return 0;
   }
 
-  Lexer lexer = {.input = asm_file, .cur_pos = 0};
+  uint8_t bytes[BYTECODE_SIZE] = {0};
+  size_t bytes_len;
 
-  Parser parser = {.lexer = &lexer, .cur_tok = tokenize(&lexer), .peek_tok = tokenize(&lexer)};
+  switch (arguments.filetype) {
+  case FT_BIN:
+    bytes_len = parse_bin(asm_file, bytes);
+    break;
+  case FT_ASM:
+    bytes_len = compile_asm(asm_file, bytes);
+    break;
+  }
 
-  vec_gt(CasmElement) *elems = parse_all(&parser);
+  print_byte_code(bytes, bytes_len);
 
-  run_asm(elems);
+  save_byte_code(bytes, bytes_len);
+
+  run_asm(bytes, bytes_len);
 
   free(asm_file);
+  */
+  uint8_t stack[STACK_SIZE] = {0};
+  uint64_t regs[REGISTER_COUNT] = {0};
 
-  vec_free(CasmElement, elems);
+  VirtualMachine vm = {.regs = regs, .stack = stack};
+
+  char *text = "Deez!";
+  size_t text_len = strlen(text);
+  for (size_t i = 0; i < text_len; i++) {
+    vm.stack[i] = text[i];
+  }
+  mov_i2r(&vm, 1, RA0);
+  mov_i2r(&vm, 0, RA1);
+  mov_i2r(&vm, text_len, RA2);
+  syscall(&vm);
 }
 
 static char *read_file_to_string(const char *filename) {

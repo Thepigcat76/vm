@@ -1,53 +1,60 @@
 #pragma once
 
+#include "../shared.h"
+
 #include <stdint.h>
 
 #define OPERANDS 3
 
-typedef enum {
-  RSP,
-  RA0,
-  RA1,
-  RA2,
-  RA3,
-} Register;
+#define make_node(name, fields) typedef struct fields name;
 
-typedef enum {
-  AST_OP_NUMBER,
-  AST_OP_REGISTER,
-} OperandType;
+make_node(MovI2RIns, {
+  uint8_t immediate;
+  Register reg;
+});
+
+make_node(MovR2RIns, {
+  Register reg0;
+  Register reg1;
+});
+
+make_node(Syscall, {});
+
+make_node(Label, { char *name; });
 
 typedef struct {
-  OperandType type;
+  enum {
+    AST_INS_MOV_I2R,
+    AST_INS_MOV_R2R,
+    AST_INS_SYSCALL,
+  } type;
   union {
-    int32_t number;
-    Register reg;
+    MovI2RIns mov_i2r;
+    MovR2RIns mov_r2r;
+    Syscall syscall;
   } var;
-} Operand;
-
-typedef enum {
-  AST_INS_MOV,
-  AST_INS_SYSCALL,
-} InstructionType;
-
-typedef struct {
-  char *name;
-} Label;
-
-typedef struct {
-  InstructionType type;
-  Operand args[3];
 } Instruction;
 
-typedef enum {
-  AST_LABEL,
-  AST_INSTRUCTION,
-} CasmElementType;
-
 typedef struct {
-  CasmElementType type;
+  enum {
+    AST_LABEL,
+    AST_INSTRUCTION,
+  } type;
   union {
     Label label;
     Instruction ins;
   } var;
 } CasmElement;
+
+typedef struct {
+  enum {
+    OP_REGISTER,
+    OP_NUMBER,
+    OP_CONST,
+  } type;
+  union {
+    Register reg;
+    uint8_t number;
+    uint8_t constant;
+  } var;
+} Operand;

@@ -1,8 +1,16 @@
 #include "lexer.h"
+
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+Lexer lexer_new(const char *input) {
+  return (Lexer) {
+    .input = input,
+    .cur_pos = 0,
+  };
+}
 
 static Token determine_ident(char *str, size_t str_len) {
   if (strcmp(str, "mov") == 0) {
@@ -10,7 +18,6 @@ static Token determine_ident(char *str, size_t str_len) {
   } else if (strcmp(str, "syscall") == 0) {
     return (Token){.type = TOK_SYSCALL, .lit = "syscall"};
   } else {
-    printf("Doing stuff\n");
     char *ident = malloc(str_len + 1);
     strcpy(ident, str);
     return (Token){.type = TOK_IDENT, .lit = ident};
