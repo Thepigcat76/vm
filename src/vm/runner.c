@@ -1,10 +1,9 @@
 #include "runner.h"
+#include "../bin/code.h"
+#include "../shared.h"
 #include "../vm/vm.h"
-#include "code.h"
-#include <stdint.h>
-#include <stdio.h>
 
-DEFINE_SET(string_t);
+#include <stdint.h>
 
 static void run_ins(VirtualMachine *vm, uint8_t *ins_bytes,
                     size_t instruction_len) {
@@ -25,9 +24,9 @@ static void run_ins(VirtualMachine *vm, uint8_t *ins_bytes,
   }
 }
 
-void run_asm(Runner *runner, uint8_t *byte_code, size_t byte_code_len) {
+void run_asm(uint8_t *byte_code, size_t byte_code_len) {
   uint8_t stack[STACK_SIZE] = {0};
-  uint64_t regs[REG_AMOUNT] = {0};
+  uint64_t regs[REGISTER_COUNT] = {0};
   VirtualMachine vm = {.regs = regs, .stack = stack};
 
   size_t byte_code_index = 0;
@@ -44,6 +43,5 @@ void run_asm(Runner *runner, uint8_t *byte_code, size_t byte_code_len) {
     byte_code_index += instruction_len;
   }
 
-  set_free(string_t, runner->labels);
   dump(&vm);
 }

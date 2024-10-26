@@ -1,4 +1,5 @@
 #include "cli.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -18,7 +19,44 @@ void print_version() {
   printf("VM project v%s by %s\n", PCK_VERSION, PCK_AUTHOR);
 }
 
-char *parse_args(int argc, char **argv) {
+static void reverse_string(char *str) {
+  int n = strlen(str); // Get the length of the string
+  for (int i = 0; i < n / 2; i++) {
+    // Swap characters
+    char temp = str[i];
+    str[i] = str[n - i - 1];
+    str[n - i - 1] = temp;
+  }
+}
+
+static enum filetype filetype_from_name(const char *filename) {
+  size_t str_len = strlen(filename);
+  char rev_name[str_len];
+  strcpy(rev_name, filename);
+  reverse_string(rev_name);
+
+  char extension[str_len];
+  size_t i = 0;
+  for (; i < str_len; i++) {
+    if (rev_name[i] != '.') {
+      extension[i] = rev_name[i];
+    } else {
+      break;
+    }
+  }
+  extension[i] = '\0';
+  reverse_string(extension);
+  
+  if (strcmp(extension, "casm") == 0) {
+    return FT_ASM;
+  } else if (strcmp(extension, "basm") == 0) {
+    return FT_BIN;
+  }
+  fprintf(stderr, "Invalid file extension: .%s\n", extension);
+  exit(1);
+}
+
+struct args parse_args(int argc, char **argv) {
   argc -= 1; // so ["vm.exe", "main.casm"] gets to ["main.casm"]
 
   if (argc == 1) {
@@ -28,11 +66,16 @@ char *parse_args(int argc, char **argv) {
     } else if (strcmp(file, "-v") == 0 || strcmp(file, "--version") == 0) {
       print_version();
     } else {
-      return file;
+      enum filetype file_type = filetype_from_name(file);
+      return (struct args){
+          .filename = file,
+          .filetype = file_type,
+      };
     }
   } else if (argc == 0) {
     print_help(argv[0]);
   }
 
-  return NULL;
+  fprintf(stderr, "Issue parsing args. Too many args supplied");
+  exit(1);
 }

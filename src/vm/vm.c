@@ -1,16 +1,18 @@
 #include "vm.h"
+#include "../shared.h"
+
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 static void syscall_exit(VirtualMachine *vm) {
-  uint64_t exit_code = vm->regs[REG_RA1];
+  uint64_t exit_code = vm->regs[RA1];
   exit(exit_code);
 }
 
 static void syscall_print(VirtualMachine *vm) {
-  uint64_t byte_ptr = vm->regs[REG_RA1];
-  uint64_t byte_len = vm->regs[REG_RA2];
+  uint64_t byte_ptr = vm->regs[RA1];
+  uint64_t byte_len = vm->regs[RA2];
 
   char msg[byte_len];
   for (uint64_t i = byte_ptr; i < byte_ptr + byte_len; i++) {
@@ -19,19 +21,6 @@ static void syscall_print(VirtualMachine *vm) {
   msg[byte_ptr+byte_len] = '\0';
   puts(msg);
 }
-
-void add(VirtualMachine *vm, uint64_t val0, uint64_t val1, Dest dest) {
-  uint64_t res = val0 + val1;
-  switch (dest.type) {
-  case DEST_REGISTER:
-    vm->regs[dest.data.reg] = res;
-    break;
-  case DEST_ADDRESS:
-    vm->stack[dest.data.addr] = res;
-    break;
-  }
-}
-
 void mov_i2r(VirtualMachine *vm, uint8_t immediate, uint8_t reg) {
   vm->regs[reg] = immediate;
 }
@@ -41,7 +30,7 @@ void mov_r2r(VirtualMachine *vm, uint8_t reg0, uint8_t reg1) {
 }
 
 void syscall(VirtualMachine *vm) {
-  uint64_t syscall = vm->regs[REG_RA0];
+  uint64_t syscall = vm->regs[RA0];
   switch (syscall) {
   case SC_EXIT:
     syscall_exit(vm);
@@ -65,7 +54,7 @@ static char* reg_to_string(int num) {
 
 void dump(VirtualMachine *vm) {
   printf("------ REGISTERS ------\n");
-  for (int num_reg = 0; num_reg < REG_AMOUNT; num_reg++) {
+  for (int num_reg = 0; num_reg < REGISTER_COUNT; num_reg++) {
     printf("%s: %ld\n", reg_to_string(num_reg), vm->regs[num_reg]);
   }
   printf("------ REGISTERS ------\n");

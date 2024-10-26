@@ -1,18 +1,12 @@
 #pragma once
 
+#include "../shared.h"
+
 #include <stdint.h>
 
 #define OPERANDS 3
 
 #define make_node(name, fields) typedef struct fields name;
-
-typedef enum {
-  RSP,
-  RA0,
-  RA1,
-  RA2,
-  RA3,
-} Register;
 
 make_node(MovI2RIns, {
   uint8_t immediate;
@@ -24,6 +18,10 @@ make_node(MovR2RIns, {
   Register reg1;
 });
 
+make_node(Syscall, {});
+
+make_node(Label, { char *name; });
+
 typedef struct {
   enum {
     AST_INS_MOV_I2R,
@@ -33,20 +31,30 @@ typedef struct {
   union {
     MovI2RIns mov_i2r;
     MovR2RIns mov_r2r;
+    Syscall syscall;
   } var;
 } Instruction;
 
-typedef enum {
-  AST_LABEL,
-  AST_INSTRUCTION,
-} CasmElementType;
-
-make_node(Label, { char *name; });
-
 typedef struct {
-  CasmElementType type;
+  enum {
+    AST_LABEL,
+    AST_INSTRUCTION,
+  } type;
   union {
     Label label;
     Instruction ins;
   } var;
 } CasmElement;
+
+typedef struct {
+  enum {
+    OP_REGISTER,
+    OP_NUMBER,
+    OP_CONST,
+  } type;
+  union {
+    Register reg;
+    uint8_t number;
+    uint8_t constant;
+  } var;
+} Operand;

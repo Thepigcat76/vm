@@ -1,9 +1,17 @@
 #include "compiler.h"
 #include "ast.h"
-#include "code.h"
+#include "../bin/code.h"
 
 #include <stdbool.h>
 #include <stdio.h>
+
+Compiler compiler_new(vec_CasmElement_t *elements, uint8_t *bytes) {
+  return (Compiler) {
+    .elements = elements,
+    .bytes = bytes,
+    .bytesptr = 0,
+  };
+}
 
 static Opcode ins_opcode(Instruction ins) {
   switch (ins.type) {

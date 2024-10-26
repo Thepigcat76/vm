@@ -1,11 +1,15 @@
 #include "parser.h"
+#include "../shared.h"
 #include "ast.h"
 #include "lexer.h"
+
+#include "surtils/src/generics/vec.h"
+
+#include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "surtils/src/generics/vec.h"
 
 DEFINE_VEC(CasmElement);
 
@@ -13,30 +17,33 @@ static void next_tok(Parser *parser);
 
 static void mem_swap(void *a, void *b, size_t size);
 
-static Operand parse_op(Parser *parser) {
+Parser parser_new(Lexer *lexer) {
+  return (Parser){
+      .lexer = lexer,
+      .cur_tok = tokenize(lexer),
+      .peek_tok = tokenize(lexer),
+  };
+}
+
+static Operand parse_operand(Parser *parser) {
   switch (parser->cur_tok.type) {
   case TOK_NUMBER: {
     char *literal = parser->cur_tok.lit;
     int32_t num = atoi(literal);
     free(literal);
-    return (Operand){.type = AST_OP_NUMBER, .var = {.number = num}};
+    return (Operand){.type = OP_NUMBER, .var = {.number = num}};
   }
   case TOK_IDENT: {
     char *str = parser->cur_tok.lit;
     Register reg;
-    if (strcmp(str, "rsp") == 0) {
-      reg = RSP;
-    } else if (strcmp(str, "ra0") == 0) {
-      reg = RA0;
-    } else if (strcmp(str, "ra1") == 0) {
-      reg = RA1;
-    } else if (strcmp(str, "ra2") == 0) {
-      reg = RA2;
-    } else if (strcmp(str, "ra3") == 0) {
-      reg = RA3;
+    for (size_t i = 0; i < REGISTER_COUNT; i++) {
+      if (strcmp(str, REGISTERS[i]) == 0) {
+        reg = (Register)i;
+      }
     }
     free(str);
-    return (Operand) {.type = AST_OP_REGISTER, .var = {.reg = reg}};
+    // TODO: Constants
+    return (Operand){.type = OP_REGISTER, .var = {.reg = reg}};
   }
   default: {
     fprintf(stderr, "Error parsing operand from token: %s\n",
@@ -48,20 +55,49 @@ static Operand parse_op(Parser *parser) {
 
 static CasmElement parse_mov(Parser *parser) {
   next_tok(parser);
-  Operand val = parse_op(parser);
+  Operand val = parse_operand(parser);
   next_tok(parser);
   next_tok(parser);
-  Operand dest = parse_op(parser);
+  Operand dest = parse_operand(parser);
   next_tok(parser);
-  return (CasmElement){
-      .type = AST_INSTRUCTION,
-      .var = {.ins = {.type = AST_INS_MOV, .args = {val, dest}}}};
+  switch (val.type) {
+  case OP_NUMBER: {
+    if (dest.type == OP_REGISTER) {
+      return (CasmElement){
+          .type = AST_INSTRUCTION,
+          .var = {.ins = {.type = AST_INS_MOV_I2R,
+                          .var = {.mov_i2r = {.immediate = val.var.number,
+                                              .reg = dest.var.reg}}}}};
+    }
+    fprintf(stderr, "Error parsing mov instruction, with immediate value: %s\n",
+            tok_to_string(parser->cur_tok.type));
+    exit(1);
+  }
+  case OP_REGISTER: {
+    if (dest.type == OP_REGISTER) {
+      return (CasmElement){
+          .type = AST_INSTRUCTION,
+          .var = {.ins = {.type = AST_INS_MOV_I2R,
+                          .var = {.mov_r2r = {.reg0 = val.var.reg,
+                                              .reg1 = dest.var.reg}}}}};
+      fprintf(stderr,
+              "Error parsing mov instruction, with register value: %s\n",
+              tok_to_string(parser->cur_tok.type));
+      exit(1);
+    }
+  }
+  case OP_CONST:
+    fprintf(stderr,
+            "Error parsing mov instruction, const is not implemented yet: %s\n",
+            tok_to_string(parser->cur_tok.type));
+    exit(1);
+  }
 }
 
 static CasmElement parse_syscall(Parser *parser) {
   next_tok(parser);
   return (CasmElement){.type = AST_INSTRUCTION,
-                       .var = {.ins = {.type = AST_INS_SYSCALL, .args = {}}}};
+                       .var = {.ins = {.type = AST_INS_SYSCALL, .var = {}}}};
 }
 
 static CasmElement parse_label(Parser *parser) {
@@ -72,7 +108,7 @@ static CasmElement parse_label(Parser *parser) {
   return (CasmElement){.type = AST_LABEL, .var = {.label = {.name = name}}};
 }
 
-vec_gt(CasmElement) *parse_all(Parser *parser) {
+vec_gt(CasmElement)* parse_all(Parser *parser) {
   vec_gt(CasmElement) *vec = vec_new(CasmElement);
   size_t input_len = strlen(parser->lexer->input);
   while (parser->cur_tok.type != TOK_ILLEGAL) {

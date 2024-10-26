@@ -1,8 +1,16 @@
 #include "lexer.h"
+
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+Lexer lexer_new(const char *input) {
+  return (Lexer) {
+    .input = input,
+    .cur_pos = 0,
+  };
+}
 
 static Token determine_ident(char *str, size_t str_len) {
   if (strcmp(str, "mov") == 0) {

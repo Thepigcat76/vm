@@ -1,8 +1,10 @@
-#include "asm/compiler.h"
-#include "asm/runner.h"
+#include "asm/lib.h"
+#include "bin/lib.h"
 #include "cli.h"
-
-#include "surtils/src/generics/set.h"
+#include "shared.h"
+#include "vm/dbg.h"
+#include "vm/runner.h"
+#include "vm/vm.h"
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -11,63 +13,50 @@
 
 static char *read_file_to_string(const char *filename);
 
-const char *to_string(CasmElementType type) {
-  switch (type) {
-  case AST_LABEL:
-    return "LABEL";
-  case AST_INSTRUCTION:
-    return "INSTRUCTION";
-  default:
-    return "AA";
-  }
-}
-
-static bool cmp_str(const string_t *s1, const string_t *s2) {
-  return strcmp(*s1, *s2);
-}
-
-static void print_byte_code(Compiler *compiler) {
-  for (size_t i = 0; i < compiler->bytesptr; i++) {
-    printf("Ins: %d\n", compiler->bytes[i]);
-  }
-}
-
 int main(int argc, char **argv) {
-  char *file = parse_args(argc, argv);
+  /*
+  struct args arguments = parse_args(argc, argv);
 
-  if (file == NULL) {
-    return 0;
-  }
-
-  char *asm_file = read_file_to_string(file);
+  char *asm_file = read_file_to_string(arguments.filename);
 
   if (asm_file == NULL) {
     return 0;
   }
 
-  Lexer lexer = {.input = asm_file, .cur_pos = 0};
+  uint8_t bytes[BYTECODE_SIZE] = {0};
+  size_t bytes_len;
 
-  Parser parser = {.lexer = &lexer,
-                   .cur_tok = tokenize(&lexer),
-                   .peek_tok = tokenize(&lexer)};
+  switch (arguments.filetype) {
+  case FT_BIN:
+    bytes_len = parse_bin(asm_file, bytes);
+    break;
+  case FT_ASM:
+    bytes_len = compile_asm(asm_file, bytes);
+    break;
+  }
 
-  vec_gt(CasmElement) *elems = parse_all(&parser);
+  print_byte_code(bytes, bytes_len);
 
-  uint8_t bytes[2000] = {0};
+  save_byte_code(bytes, bytes_len);
 
-  Compiler compiler = {.elements = elems, .bytes = bytes, .bytesptr = 0};
-
-  compile(&compiler);
-
-  print_byte_code(&compiler);
-
-  Runner runner = {.labels = set_new_cmp(string_t, cmp_str)};
-
-  run_asm(&runner, compiler.bytes, compiler.bytesptr);
+  run_asm(bytes, bytes_len);
 
   free(asm_file);
+  */
+  uint8_t stack[STACK_SIZE] = {0};
+  uint64_t regs[REGISTER_COUNT] = {0};
 
-  vec_free(CasmElement, elems);
+  VirtualMachine vm = {.regs = regs, .stack = stack};
+
+  char *text = "Deez!";
+  size_t text_len = strlen(text);
+  for (size_t i = 0; i < text_len; i++) {
+    vm.stack[i] = text[i];
+  }
+  mov_i2r(&vm, 1, RA0);
+  mov_i2r(&vm, 0, RA1);
+  mov_i2r(&vm, text_len, RA2);
+  syscall(&vm);
 }
 
 static char *read_file_to_string(const char *filename) {

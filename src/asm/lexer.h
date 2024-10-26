@@ -24,10 +24,12 @@ typedef struct {
 } Token;
 
 typedef struct {
-  char *input;
+  const char *input;
 
   size_t cur_pos;
 } Lexer;
+
+Lexer lexer_new(const char *input);
 
 Token tokenize(Lexer *lexer);
 
