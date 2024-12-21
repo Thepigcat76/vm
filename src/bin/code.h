@@ -4,9 +4,14 @@
 #include <stdlib.h>
 
 typedef enum {
-  OP_SYSCALL = 0,
-  OP_MOVI2R = 1,
-  OP_MOVR2R = 2,
+  OP_SYSCALL,
+  OP_MOVI2R,
+  OP_MOVR2R,
+  OP_MOVC2R,
+  OP_DECL_BYTE,
+  OP_JMP,
+  OP_CMP,
+  OP_JNE,
 } Opcode;
 
 size_t ins_len(Opcode opcode);

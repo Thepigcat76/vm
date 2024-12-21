@@ -18,28 +18,61 @@ make_node(MovR2RIns, {
   Register reg1;
 });
 
-make_node(Syscall, {});
+make_node(MovC2RIns, {
+  char *ident;
+  Register reg;
+});
+
+make_node(SyscallIns, {});
 
 make_node(Label, { char *name; });
+
+make_node(DeclByteIns, {
+  char *ident;
+  uint8_t byte;
+});
+
+make_node(DeclStrIns, {
+  char *ident;
+  char *str;
+});
+
+make_node(JmpIns, { char *label; });
+
+make_node(JNEIns, { char *label; });
+
+make_node(CmpIns, {
+  uint8_t val0;
+  uint8_t val1;
+});
 
 typedef struct {
   enum {
     AST_INS_MOV_I2R,
     AST_INS_MOV_R2R,
+    AST_INS_MOV_C2R,
     AST_INS_SYSCALL,
+    AST_INS_DECL_BYTE,
+    AST_INS_DECL_STR,
+    AST_INS_JMP,
+    AST_INS_CMP,
+    AST_INS_JNE,
   } type;
   union {
     MovI2RIns mov_i2r;
     MovR2RIns mov_r2r;
-    Syscall syscall;
+    MovC2RIns mov_c2r;
+    SyscallIns syscall;
+    DeclByteIns decl_byte;
+    DeclStrIns decl_str;
+    JmpIns jmp;
+    CmpIns cmp;
+    JNEIns jne;
   } var;
 } Instruction;
 
 typedef struct {
-  enum {
-    AST_LABEL,
-    AST_INSTRUCTION,
-  } type;
+  enum { AST_LABEL, AST_INSTRUCTION } type;
   union {
     Label label;
     Instruction ins;
@@ -55,6 +88,6 @@ typedef struct {
   union {
     Register reg;
     uint8_t number;
-    uint8_t constant;
+    char *constant;
   } var;
 } Operand;

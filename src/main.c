@@ -1,20 +1,28 @@
+#include "asm/ast.h"
+#include "asm/lexer.h"
 #include "asm/lib.h"
+#include "asm/parser.h"
 #include "bin/lib.h"
 #include "cli.h"
-#include "shared.h"
-#include "vm/dbg.h"
-#include "vm/runner.h"
-#include "vm/vm.h"
 
+#include "surtests/src/tests.h"
+#include "surtils/src/generics/vec.h"
+#include "surtils/src/generics/iter.h"
+#include "vm/runner.h"
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 
+#define BYTECODE_SIZE 2000
+
+DEFINE_VEC_EXPORTS(Token)
+
+DEFINE_VEC(Token)
+
 static char *read_file_to_string(const char *filename);
 
-int main(int argc, char **argv) {
-  /*
+int run(int argc, char **argv) {
   struct args arguments = parse_args(argc, argv);
 
   char *asm_file = read_file_to_string(arguments.filename);
@@ -35,29 +43,129 @@ int main(int argc, char **argv) {
     break;
   }
 
-  print_byte_code(bytes, bytes_len);
-
-  save_byte_code(bytes, bytes_len);
-
   run_asm(bytes, bytes_len);
 
   free(asm_file);
-  */
-  uint8_t stack[STACK_SIZE] = {0};
-  uint64_t regs[REGISTER_COUNT] = {0};
 
-  VirtualMachine vm = {.regs = regs, .stack = stack};
-
-  char *text = "Deez!";
-  size_t text_len = strlen(text);
-  for (size_t i = 0; i < text_len; i++) {
-    vm.stack[i] = text[i];
-  }
-  mov_i2r(&vm, 1, RA0);
-  mov_i2r(&vm, 0, RA1);
-  mov_i2r(&vm, text_len, RA2);
-  syscall(&vm);
+  return 0;
 }
+
+static int test_vm_data_sec();
+
+int main(int argc, char **argv) {
+  // Only run if no tests are running
+  const char *env = getenv("SURTUR_TESTS");
+  if (env == NULL) {
+    return run(argc, argv);
+  }
+
+  // clang-format off
+  const TokenType asm_lexer_start_expected[] = {
+      TOK_IDENT,
+      TOK_COLON,
+      TOK_MOV,
+      TOK_NUMBER,
+      TOK_COMMA,
+      TOK_IDENT,
+      TOK_MOV,
+      TOK_IDENT,
+      TOK_COMMA,
+      TOK_IDENT,
+      TOK_MOV,
+      TOK_IDENT,
+      TOK_COMMA,
+      TOK_IDENT,
+      TOK_SYSCALL
+  };
+  // clang-format on
+
+  TEST(ASM_LEXER_START, {
+    char *file = read_file_to_string("tests/lexer_start.casm");
+
+    if (file == NULL) {
+      perror("Could not find specified file\n");
+      return 1;
+    }
+
+    Lexer lexer = lexer_new(file);
+    Token tok = tokenize(&lexer);
+    size_t i = 0;
+    while (tok.type != TOK_ILLEGAL) {
+      ASSERT(tok.type == asm_lexer_start_expected[i]);
+      printf("Token: %s, Literal: %s\n", tok_to_string(tok.type), tok.lit);
+      tok = tokenize(&lexer);
+      i++;
+    }
+  });
+
+  // clang-format off
+  const TokenType asm_lexer_data_sec_expected[] = {
+    TOK_IDENT,
+    TOK_COLON,
+    TOK_DECL,
+    TOK_IDENT,
+    TOK_COMMA,
+    TOK_STRING,
+    TOK_DECL,
+    TOK_IDENT,
+    TOK_COMMA,
+    TOK_NUMBER
+  };
+  // clang-format on
+
+  TEST(ASM_LEXER_DATA_SEC, {
+    char *file = read_file_to_string("tests/lexer_data.casm");
+
+    if (file == NULL) {
+      perror("Could not find specified file\n");
+      return 1;
+    }
+
+    Lexer lexer = lexer_new(file);
+    Token tok = tokenize(&lexer);
+    size_t i = 0;
+    while (tok.type != TOK_ILLEGAL) {
+      printf("type: %s, expected: %s, literal: %s\n", tok_to_string(tok.type), tok_to_string(asm_lexer_data_sec_expected[i]), tok.lit);
+      ASSERT(tok.type == asm_lexer_data_sec_expected[i]);
+      printf("Token: %s, Literal: %s\n", tok_to_string(tok.type), tok.lit);
+      tok = tokenize(&lexer);
+      i++;
+    }
+  });
+
+  // clang-format off
+  const TokenType asm_parser_data_sec_expected[] = {
+    TOK_IDENT,
+    TOK_COLON,
+    TOK_DECL,
+    TOK_IDENT,
+    TOK_COMMA,
+    TOK_STRING,
+    TOK_DECL,
+    TOK_IDENT,
+    TOK_COMMA,
+    TOK_NUMBER
+  };
+  // clang-format on
+
+  TEST(ASM_PARSER_DATA_SEC, {
+    char *file = read_file_to_string("tests/lexer_data.casm");
+
+    if (file == NULL) {
+      perror("Could not find specified file\n");
+      return 1;
+    }
+
+    Lexer lexer = lexer_new(file);
+    Parser parser = parser_new(&lexer);
+    VEC(CasmElement) ast = parse_all(&parser);
+    FOREACH(CasmElement, ast, elem, {
+      printf("%s\n", casm_element_to_string(&elem));
+    });
+    free(ast.data);
+  });
+}
+
 
 static char *read_file_to_string(const char *filename) {
   FILE *file = fopen(filename, "rb");

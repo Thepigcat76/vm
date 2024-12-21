@@ -1,7 +1,8 @@
 - Stack register
-    - Register stack pointer: `rsp`
+    - Register stack pointer:        `rsp`
     - Register (stack) base pointer: `rbp`
 
-- Argument register
-
-- General purpose register
+- Argument registers
+    - Register argument 0 (syscall type): `ra0`
+    - Register argument 1-5:              `ra(1-5)`
+    

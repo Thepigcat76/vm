@@ -1,0 +1,5 @@
+_start:
+    mov 1, ra0
+    mov MSG, ra1
+    mov MSG_LEN, ra2
+    syscall

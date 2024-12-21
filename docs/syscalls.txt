@@ -1,0 +1,6 @@
+- Exit (RA0: 0)
+    - RA1: Exit code
+
+- Print (RA0: 1)
+    - RA1: pointer to the first byte
+    - RA2: integer storing the length of the string

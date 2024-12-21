@@ -1,4 +1,16 @@
+_data:
+    decl MSG, "Amongus"
+    decl MSG_LEN, 7
+
 _start:
+    mov 1, ra0
+    mov MSG, ra1
+    mov MSG_LEN, ra2
+    syscall
+    cmp 1, 0
+    jne exit
+
+exit:
     mov 0, ra0
-    mov 1, ra1
+    mov 0, ra1
     syscall
