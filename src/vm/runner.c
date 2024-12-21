@@ -29,6 +29,14 @@ static void run_ins(VirtualMachine *vm, uint8_t *ins_bytes,
     jump(vm, ins_bytes[1]);
     break;
   }
+  case OP_JNE: {
+    jne(vm, ins_bytes[1]);
+    break;
+  }
+  case OP_CMP: {
+    cmp(vm, ins_bytes[1], ins_bytes[2]);
+    break;
+  }
   case OP_DECL_BYTE: {
     decl(vm, ins_bytes[1]);
     break;

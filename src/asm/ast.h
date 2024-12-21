@@ -39,6 +39,13 @@ make_node(DeclStrIns, {
 
 make_node(JmpIns, { char *label; });
 
+make_node(JNEIns, { char *label; });
+
+make_node(CmpIns, {
+  uint8_t val0;
+  uint8_t val1;
+});
+
 typedef struct {
   enum {
     AST_INS_MOV_I2R,
@@ -48,6 +55,8 @@ typedef struct {
     AST_INS_DECL_BYTE,
     AST_INS_DECL_STR,
     AST_INS_JMP,
+    AST_INS_CMP,
+    AST_INS_JNE,
   } type;
   union {
     MovI2RIns mov_i2r;
@@ -57,6 +66,8 @@ typedef struct {
     DeclByteIns decl_byte;
     DeclStrIns decl_str;
     JmpIns jmp;
+    CmpIns cmp;
+    JNEIns jne;
   } var;
 } Instruction;
 

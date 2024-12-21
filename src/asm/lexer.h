@@ -14,6 +14,8 @@ typedef enum {
   TOK_JMP,
   TOK_MOV,
   TOK_SYSCALL,
+  TOK_CMP,
+  TOK_JNE,
 
   // Literals
   TOK_IDENT,

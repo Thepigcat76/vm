@@ -27,6 +27,8 @@ Lexer lexer_new(char *input) {
   create_token(TOK_SYSCALL, "syscall");
   create_token(TOK_DECL, "decl");
   create_token(TOK_JMP, "jmp");
+  create_token(TOK_CMP, "cmp");
+  create_token(TOK_JNE, "jne");
   return (Lexer){
       .input = input,
       .cur_pos = 0,

@@ -39,6 +39,16 @@ void jump(VirtualMachine *vm, uint8_t label) {
   vm->ip = label;
 }
 
+void jne(VirtualMachine *vm, uint8_t label) {
+  if (!vm->regs[RA0]) {
+    vm->ip = label;
+  }
+}
+
+void cmp(VirtualMachine *vm, uint8_t val0, uint8_t val1) {
+  vm->regs[RA0] = val0 == val1;
+}
+
 void syscall(VirtualMachine *vm) {
   uint64_t syscall = vm->regs[RA0];
   switch (syscall) {

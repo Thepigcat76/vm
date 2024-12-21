@@ -11,8 +11,11 @@ size_t ins_len(Opcode opcode) {
   case OP_MOVR2R:
   case OP_MOVC2R:
     return 3;
+  case OP_JNE:
   case OP_JMP:
     return 2;
+  case OP_CMP:
+    return 3;
   case OP_DECL_BYTE:
     return 2;
   }

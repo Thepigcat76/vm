@@ -160,6 +160,32 @@ static CasmElement parse_jmp(Parser *parser) {
       .var = {.ins = {.type = AST_INS_JMP, .var = {.jmp = {.label = name}}}}};
 }
 
+static CasmElement parse_cmp(Parser *parser) {
+  // CMP - cur token is val0
+  next_tok(parser);
+  uint8_t val0 = atoi(parser->cur_tok.lit);
+  // Val0 - cur token is comma
+  next_tok(parser);
+  // Comma - cur token is val1
+  next_tok(parser);
+  uint8_t val1 = atoi(parser->cur_tok.lit);
+  next_tok(parser);
+  return (CasmElement){
+      .type = AST_INSTRUCTION,
+      .var = {.ins = {.type = AST_INS_CMP,
+                      .var = {.cmp = {.val0 = val0, .val1 = val1}}}}};
+}
+
+static CasmElement parse_jne(Parser *parser) {
+  // JMP - cur tok is label
+  next_tok(parser);
+  char *name = parser->cur_tok.lit;
+  next_tok(parser);
+  return (CasmElement){
+      .type = AST_INSTRUCTION,
+      .var = {.ins = {.type = AST_INS_JNE, .var = {.jne = {.label = name}}}}};
+}
+
 VEC(CasmElement) parse_all(Parser *parser) {
   VEC(CasmElement) vec = vec_new(CasmElement);
   size_t input_len = strlen(parser->lexer->input);
@@ -182,6 +208,10 @@ CasmElement parse(Parser *parser) {
     return parse_syscall(parser);
   case TOK_IDENT:
     return parse_label(parser);
+  case TOK_CMP:
+    return parse_cmp(parser);
+  case TOK_JNE:
+    return parse_jne(parser);
   default:
     fprintf(stderr,
             "Error parsing token, invalid token that cannot be parsed: %s\n",
@@ -210,27 +240,24 @@ static void mem_swap(void *a, void *b, size_t size) {
   free(temp); // Free the temporary buffer
 }
 
+#define STRINGIFY(name)                                                        \
+  case name:                                                                   \
+    return #name;
+
 char *casm_element_to_string(CasmElement *casm_element) {
   switch (casm_element->type) {
-  case AST_LABEL: {
-    return "Label";
-  }
+    STRINGIFY(AST_LABEL)
   case AST_INSTRUCTION: {
     switch (casm_element->var.ins.type) {
-    case AST_INS_MOV_I2R:
-      return "Instruction - Mov I to R";
-    case AST_INS_MOV_R2R:
-      return "Instruction - Mov R to R";
-    case AST_INS_MOV_C2R:
-      return "Instruction - Mov C to R";
-    case AST_INS_SYSCALL:
-      return "Instruction - Syscall";
-    case AST_INS_DECL_BYTE:
-      return "Instruction - Decl Byte";
-    case AST_INS_DECL_STR:
-      return "Instruction - Decl String";
-    case AST_INS_JMP:
-      return "Instruction - Jmp";
+      STRINGIFY(AST_INS_MOV_I2R);
+      STRINGIFY(AST_INS_MOV_R2R);
+      STRINGIFY(AST_INS_MOV_C2R);
+      STRINGIFY(AST_INS_SYSCALL);
+      STRINGIFY(AST_INS_DECL_BYTE);
+      STRINGIFY(AST_INS_DECL_STR);
+      STRINGIFY(AST_INS_JMP);
+      STRINGIFY(AST_INS_JNE);
+      STRINGIFY(AST_INS_CMP);
     }
   }
   default: {

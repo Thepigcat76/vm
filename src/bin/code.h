@@ -10,6 +10,8 @@ typedef enum {
   OP_MOVC2R,
   OP_DECL_BYTE,
   OP_JMP,
+  OP_CMP,
+  OP_JNE,
 } Opcode;
 
 size_t ins_len(Opcode opcode);

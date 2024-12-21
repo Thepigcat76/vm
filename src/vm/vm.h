@@ -35,6 +35,10 @@ void syscall(VirtualMachine *vm);
 
 void jump(VirtualMachine *vm, uint8_t label);
 
+void jne(VirtualMachine *vm, uint8_t label);
+
 void decl(VirtualMachine *vm, uint8_t val);
+
+void cmp(VirtualMachine *vm, uint8_t val0, uint8_t val1);
 
 void dump(VirtualMachine *vm);

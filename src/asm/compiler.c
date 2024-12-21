@@ -29,6 +29,10 @@ Opcode ins_opcode(Instruction ins) {
     return OP_DECL_BYTE;
   case AST_INS_JMP:
     return OP_JMP;
+  case AST_INS_JNE:
+    return OP_JNE;
+  case AST_INS_CMP:
+    return OP_CMP;
   case AST_INS_DECL_STR:
     fprintf(stderr, "Tried to get opcode for AST_INS_DECL_STR\n");
     exit(1);
@@ -91,6 +95,18 @@ static void compile_ins(Compiler *compiler, Instruction ins) {
   case AST_INS_JMP: {
     uint32_t label_id = symbol_table_get(compiler, ins.var.jmp.label);
     emit(compiler, label_id);
+    break;
+  }
+  case AST_INS_JNE: {
+    uint32_t label_id = symbol_table_get(compiler, ins.var.jne.label);
+    emit(compiler, label_id);
+    break;
+  }
+  case AST_INS_CMP: {
+    uint8_t val0 = ins.var.cmp.val0;
+    uint8_t val1 = ins.var.cmp.val1;
+    emit(compiler, val0);
+    emit(compiler, val1);
     break;
   }
   case AST_INS_MOV_R2R: {
