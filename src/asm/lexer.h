@@ -3,6 +3,9 @@
 #include <stdio.h>
 
 typedef enum {
+  // Constants
+  TOK_DECL,
+
   // Symbols
   TOK_COLON,
   TOK_COMMA,
@@ -14,6 +17,7 @@ typedef enum {
   // Literals
   TOK_IDENT,
   TOK_NUMBER,
+  TOK_STRING,
 
   TOK_ILLEGAL,
 } TokenType;

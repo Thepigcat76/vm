@@ -1,7 +1,3 @@
-_data:
-    decl MSG, "Amongus"
-    decl MSG_LEN, 7
-
 _start:
     mov 1, ra0
     mov MSG, ra1

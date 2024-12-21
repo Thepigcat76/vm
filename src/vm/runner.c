@@ -17,8 +17,16 @@ static void run_ins(VirtualMachine *vm, uint8_t *ins_bytes,
     mov_r2r(vm, ins_bytes[1], ins_bytes[2]);
     break;
   }
+  case OP_MOVC2R: {
+    mov_c2r(vm, ins_bytes[1], ins_bytes[2]);
+    break;
+  }
   case OP_SYSCALL: {
     syscall(vm);
+    break;
+  }
+  case OP_DECL_BYTE: {
+    decl(vm, ins_bytes[1]);
     break;
   }
   }
@@ -26,8 +34,9 @@ static void run_ins(VirtualMachine *vm, uint8_t *ins_bytes,
 
 void run_asm(uint8_t *byte_code, size_t byte_code_len) {
   uint8_t stack[STACK_SIZE] = {0};
+  uint8_t constants[CONSTANT_COUNT] = {0};
   uint64_t regs[REGISTER_COUNT] = {0};
-  VirtualMachine vm = {.regs = regs, .stack = stack};
+  VirtualMachine vm = {.regs = regs, .stack = stack, .constants = constants, .constans_count = 0, .ip = 0};
 
   size_t byte_code_index = 0;
   while (byte_code_index < byte_code_len) {

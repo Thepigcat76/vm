@@ -1,0 +1,3 @@
+_data:
+    decl MSG, "Hop"
+    decl MSG_LEN, 14

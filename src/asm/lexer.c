@@ -17,11 +17,40 @@ static Token determine_ident(char *str, size_t str_len) {
     return (Token){.type = TOK_MOV, .lit = "mov"};
   } else if (strcmp(str, "syscall") == 0) {
     return (Token){.type = TOK_SYSCALL, .lit = "syscall"};
+  } else if (strcmp(str, "decl") == 0) {
+    return (Token){.type = TOK_DECL, .lit = "decl"};
   } else {
     char *ident = malloc(str_len + 1);
     strcpy(ident, str);
     return (Token){.type = TOK_IDENT, .lit = ident};
   }
+}
+
+static Token tokenize_string(Lexer *lexer) {
+  // Quotation mark
+  lexer->cur_pos++;
+
+  size_t string_len = 0;
+  size_t peek_pos = lexer->cur_pos + 1;
+  while (lexer->input[peek_pos] != '"') {
+    string_len++;
+    peek_pos++;
+  }
+  string_len++;
+  peek_pos++;
+
+  char *string = malloc(string_len + 1);
+
+  for (size_t i = 0; i < string_len; i++) {
+    string[i] = lexer->input[lexer->cur_pos + i];
+  }
+  string[string_len] = '\0';
+  lexer->cur_pos = peek_pos;
+
+  return (Token) {
+    .type = TOK_STRING,
+    .lit = string,
+  };
 }
 
 static Token tokenize_other(Lexer *lexer) {
@@ -50,7 +79,6 @@ static Token tokenize_other(Lexer *lexer) {
       lexer->cur_pos++;
     }
 
-    // TODO: Free this
     char *str = malloc(lexer->cur_pos - start_pos + 1);
 
     for (size_t i = start_pos; i < lexer->cur_pos; i++) {
@@ -75,6 +103,8 @@ Token tokenize(Lexer *lexer) {
   case ',':
     lexer->cur_pos++;
     return (Token){.type = TOK_COMMA, .lit = ","};
+  case '"':
+    return tokenize_string(lexer);
   default:
     return tokenize_other(lexer);
   }
@@ -94,6 +124,10 @@ const char *tok_to_string(TokenType tok) {
     return "IDENT";
   case TOK_NUMBER:
     return "NUMBER";
+  case TOK_STRING:
+    return "STRING";
+  case TOK_DECL:
+    return "DECL";
   case TOK_ILLEGAL:
     return "ILLEGAL";
   }

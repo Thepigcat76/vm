@@ -9,8 +9,9 @@ size_t ins_len(Opcode opcode) {
     return 1;
   case OP_MOVI2R:
   case OP_MOVR2R:
+  case OP_MOVC2R:
     return 3;
-  default:
-    return 1;
+  case OP_DECL_BYTE:
+    return 2;
   }
 }

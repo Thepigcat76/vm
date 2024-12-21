@@ -16,6 +16,8 @@ typedef struct {
 
 Parser parser_new(Lexer *lexer);
 
-vec_gt(CasmElement) *parse_all(Parser *parser);
+VEC(CasmElement) parse_all(Parser *parser);
 
 CasmElement parse(Parser *parser);
+
+char *casm_element_to_string(CasmElement *casm_element);
