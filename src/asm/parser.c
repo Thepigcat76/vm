@@ -143,11 +143,21 @@ static CasmElement parse_syscall(Parser *parser) {
 }
 
 static CasmElement parse_label(Parser *parser) {
-  const char *name = parser->cur_tok.lit;
+  char *name = parser->cur_tok.lit;
   // colon
   next_tok(parser);
   next_tok(parser);
   return (CasmElement){.type = AST_LABEL, .var = {.label = {.name = name}}};
+}
+
+static CasmElement parse_jmp(Parser *parser) {
+  // JMP - cur tok is label
+  next_tok(parser);
+  char *name = parser->cur_tok.lit;
+  next_tok(parser);
+  return (CasmElement){
+      .type = AST_INSTRUCTION,
+      .var = {.ins = {.type = AST_INS_JMP, .var = {.jmp = {.label = name}}}}};
 }
 
 VEC(CasmElement) parse_all(Parser *parser) {
@@ -164,6 +174,8 @@ CasmElement parse(Parser *parser) {
   switch (parser->cur_tok.type) {
   case TOK_MOV:
     return parse_mov(parser);
+  case TOK_JMP:
+    return parse_jmp(parser);
   case TOK_DECL:
     return parse_decl(parser);
   case TOK_SYSCALL:
@@ -205,24 +217,20 @@ char *casm_element_to_string(CasmElement *casm_element) {
   }
   case AST_INSTRUCTION: {
     switch (casm_element->var.ins.type) {
-    case AST_INS_MOV_I2R: {
+    case AST_INS_MOV_I2R:
       return "Instruction - Mov I to R";
-    }
-    case AST_INS_MOV_R2R: {
+    case AST_INS_MOV_R2R:
       return "Instruction - Mov R to R";
-    }
-    case AST_INS_MOV_C2R: {
+    case AST_INS_MOV_C2R:
       return "Instruction - Mov C to R";
-    }
-    case AST_INS_SYSCALL: {
+    case AST_INS_SYSCALL:
       return "Instruction - Syscall";
-    }
-    case AST_INS_DECL_BYTE: {
+    case AST_INS_DECL_BYTE:
       return "Instruction - Decl Byte";
-    }
-    case AST_INS_DECL_STR: {
+    case AST_INS_DECL_STR:
       return "Instruction - Decl String";
-    }
+    case AST_INS_JMP:
+      return "Instruction - Jmp";
     }
   }
   default: {

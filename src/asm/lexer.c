@@ -5,25 +5,44 @@
 #include <stdlib.h>
 #include <string.h>
 
-Lexer lexer_new(const char *input) {
-  return (Lexer) {
-    .input = input,
-    .cur_pos = 0,
+#define TOKEN_TYPES 100
+
+typedef struct {
+  TokenType tok_types[TOKEN_TYPES];
+  char *literals[TOKEN_TYPES];
+  size_t len;
+} TokenTable;
+
+static TokenTable TOKENS = {.len = 0};
+
+void create_token(TokenType tok_type, char *literal) {
+  size_t index = TOKENS.len;
+  TOKENS.tok_types[index] = tok_type;
+  TOKENS.literals[index] = literal;
+  TOKENS.len++;
+}
+
+Lexer lexer_new(char *input) {
+  create_token(TOK_MOV, "mov");
+  create_token(TOK_SYSCALL, "syscall");
+  create_token(TOK_DECL, "decl");
+  create_token(TOK_JMP, "jmp");
+  return (Lexer){
+      .input = input,
+      .cur_pos = 0,
   };
 }
 
-static Token determine_ident(char *str, size_t str_len) {
-  if (strcmp(str, "mov") == 0) {
-    return (Token){.type = TOK_MOV, .lit = "mov"};
-  } else if (strcmp(str, "syscall") == 0) {
-    return (Token){.type = TOK_SYSCALL, .lit = "syscall"};
-  } else if (strcmp(str, "decl") == 0) {
-    return (Token){.type = TOK_DECL, .lit = "decl"};
-  } else {
-    char *ident = malloc(str_len + 1);
-    strcpy(ident, str);
-    return (Token){.type = TOK_IDENT, .lit = ident};
+static Token determine_ident(const char *str, size_t str_len) {
+  for (size_t i = 0; i < TOKENS.len; i++) {
+    if (strcmp(str, TOKENS.literals[i]) == 0) {
+      return (Token){.type = TOKENS.tok_types[i], .lit = TOKENS.literals[i]};
+    }
   }
+  
+  char *ident = malloc(str_len + 1);
+  strcpy(ident, str);
+  return (Token){.type = TOK_IDENT, .lit = ident};
 }
 
 static Token tokenize_string(Lexer *lexer) {
@@ -47,9 +66,9 @@ static Token tokenize_string(Lexer *lexer) {
   string[string_len] = '\0';
   lexer->cur_pos = peek_pos;
 
-  return (Token) {
-    .type = TOK_STRING,
-    .lit = string,
+  return (Token){
+      .type = TOK_STRING,
+      .lit = string,
   };
 }
 
@@ -130,5 +149,9 @@ const char *tok_to_string(TokenType tok) {
     return "DECL";
   case TOK_ILLEGAL:
     return "ILLEGAL";
+  case TOK_JMP:
+    return "JMP";
+  default:
+    return "UNKNOWN";
   }
 }

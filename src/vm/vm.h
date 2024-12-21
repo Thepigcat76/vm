@@ -33,6 +33,8 @@ void mov_c2r(VirtualMachine *vm, uint8_t constant, uint8_t reg);
 
 void syscall(VirtualMachine *vm);
 
+void jump(VirtualMachine *vm, uint8_t label);
+
 void decl(VirtualMachine *vm, uint8_t val);
 
 void dump(VirtualMachine *vm);

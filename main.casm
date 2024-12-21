@@ -7,3 +7,9 @@ _start:
     mov MSG, ra1
     mov MSG_LEN, ra2
     syscall
+    jmp _start
+
+exit:
+    mov 0, ra0
+    mov 0, ra1
+    syscall

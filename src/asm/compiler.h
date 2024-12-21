@@ -2,6 +2,7 @@
 
 #include "ast.h"
 #include "parser.h"
+#include "../bin/code.h"
 
 #include <stdint.h>
 #include <surtils/src/generics/vec.h>
@@ -25,3 +26,7 @@ typedef struct {
 Compiler compiler_new(VEC(CasmElement) elements, uint8_t *bytes);
 
 void compile(Compiler *compiler);
+
+Opcode ins_opcode(Instruction ins);
+
+void symbol_table_insert(Compiler *compiler, char *key, uint32_t val);

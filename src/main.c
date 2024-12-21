@@ -80,7 +80,7 @@ int main(int argc, char **argv) {
   // clang-format on
 
   TEST(ASM_LEXER_START, {
-    const char *file = read_file_to_string("tests/lexer_start.casm");
+    char *file = read_file_to_string("tests/lexer_start.casm");
 
     if (file == NULL) {
       perror("Could not find specified file\n");
@@ -114,7 +114,7 @@ int main(int argc, char **argv) {
   // clang-format on
 
   TEST(ASM_LEXER_DATA_SEC, {
-    const char *file = read_file_to_string("tests/lexer_data.casm");
+    char *file = read_file_to_string("tests/lexer_data.casm");
 
     if (file == NULL) {
       perror("Could not find specified file\n");
@@ -149,7 +149,7 @@ int main(int argc, char **argv) {
   // clang-format on
 
   TEST(ASM_PARSER_DATA_SEC, {
-    const char *file = read_file_to_string("tests/lexer_data.casm");
+    char *file = read_file_to_string("tests/lexer_data.casm");
 
     if (file == NULL) {
       perror("Could not find specified file\n");

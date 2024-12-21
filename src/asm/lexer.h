@@ -11,6 +11,7 @@ typedef enum {
   TOK_COMMA,
 
   // Instructions
+  TOK_JMP,
   TOK_MOV,
   TOK_SYSCALL,
 
@@ -28,12 +29,12 @@ typedef struct {
 } Token;
 
 typedef struct {
-  const char *input;
+  char *input;
 
   size_t cur_pos;
 } Lexer;
 
-Lexer lexer_new(const char *input);
+Lexer lexer_new(char *input);
 
 Token tokenize(Lexer *lexer);
 

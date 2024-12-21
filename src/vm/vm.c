@@ -35,6 +35,10 @@ void mov_c2r(VirtualMachine *vm, uint8_t constant, uint8_t reg) {
   vm->regs[reg] = constant;
 }
 
+void jump(VirtualMachine *vm, uint8_t label) {
+  vm->ip = label;
+}
+
 void syscall(VirtualMachine *vm) {
   uint64_t syscall = vm->regs[RA0];
   switch (syscall) {

@@ -23,30 +23,21 @@ make_node(MovC2RIns, {
   Register reg;
 });
 
-make_node(Syscall, {});
+make_node(SyscallIns, {});
 
-make_node(Label, { const char *name; });
+make_node(Label, { char *name; });
 
-typedef struct {
-  enum {
-    DATA_STRING,
-    DATA_INT,
-  } type;
-  union {
-    char *string;
-    int64_t integer;
-  } var;
-} DataValue;
-
-make_node(DeclByte, {
+make_node(DeclByteIns, {
   char *ident;
   uint8_t byte;
 });
 
-make_node(DeclStr, {
+make_node(DeclStrIns, {
   char *ident;
   char *str;
 });
+
+make_node(JmpIns, { char *label; });
 
 typedef struct {
   enum {
@@ -56,22 +47,21 @@ typedef struct {
     AST_INS_SYSCALL,
     AST_INS_DECL_BYTE,
     AST_INS_DECL_STR,
+    AST_INS_JMP,
   } type;
   union {
     MovI2RIns mov_i2r;
     MovR2RIns mov_r2r;
     MovC2RIns mov_c2r;
-    Syscall syscall;
-    DeclByte decl_byte;
-    DeclStr decl_str;
+    SyscallIns syscall;
+    DeclByteIns decl_byte;
+    DeclStrIns decl_str;
+    JmpIns jmp;
   } var;
 } Instruction;
 
 typedef struct {
-  enum {
-    AST_LABEL,
-    AST_INSTRUCTION
-  } type;
+  enum { AST_LABEL, AST_INSTRUCTION } type;
   union {
     Label label;
     Instruction ins;

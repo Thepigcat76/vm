@@ -15,7 +15,7 @@ Compiler compiler_new(VEC(CasmElement) elements, uint8_t *bytes) {
                     .symbol_table = {.len = 0}};
 }
 
-static Opcode ins_opcode(Instruction ins) {
+Opcode ins_opcode(Instruction ins) {
   switch (ins.type) {
   case AST_INS_MOV_I2R:
     return OP_MOVI2R;
@@ -27,6 +27,8 @@ static Opcode ins_opcode(Instruction ins) {
     return OP_SYSCALL;
   case AST_INS_DECL_BYTE:
     return OP_DECL_BYTE;
+  case AST_INS_JMP:
+    return OP_JMP;
   case AST_INS_DECL_STR:
     fprintf(stderr, "Tried to get opcode for AST_INS_DECL_STR\n");
     exit(1);
@@ -41,6 +43,30 @@ static void emit_op(Compiler *compiler, Instruction ins) {
   emit(compiler, ins_opcode(ins));
 }
 
+void symbol_table_insert(Compiler *compiler, char *key,
+                                uint32_t val) {
+  size_t len = compiler->symbol_table.len;
+  compiler->symbol_table.keys[len] = key;
+  compiler->symbol_table.values[len] = val;
+  compiler->symbol_table.len++;
+}
+
+static uint32_t symbol_table_get(Compiler *compiler, char *key) {
+  size_t index = -1;
+  for (size_t i = 0; i < compiler->symbol_table.len; i++) {
+    if (strcmp(compiler->symbol_table.keys[i], key) == 0) {
+      index = i;
+      break;
+    }
+  }
+  if (index == -1) {
+    fprintf(stderr, "Could not find key: %s\n", key);
+    exit(1);
+  }
+
+  return compiler->symbol_table.values[index];
+}
+
 static void compile_ins(Compiler *compiler, Instruction ins) {
   emit_op(compiler, ins);
 
@@ -51,51 +77,40 @@ static void compile_ins(Compiler *compiler, Instruction ins) {
     break;
   }
   case AST_INS_MOV_C2R: {
-    size_t index = -1;
-    for (size_t i = 0; i < compiler->symbol_table.len; i++) {
-      if (strcmp(compiler->symbol_table.keys[i], ins.var.mov_c2r.ident) == 0) {
-        index = i;
-        break;
-      }
-    }
-    if (index == -1) {
-      fprintf(stderr, "Could not find constant with name: %s\n", ins.var.mov_c2r.ident);
-      exit(1);
-    }
-    emit(compiler, compiler->symbol_table.values[index]);
+    uint32_t const_id = symbol_table_get(compiler, ins.var.mov_c2r.ident);
+    emit(compiler, const_id);
     emit(compiler, ins.var.mov_c2r.reg);
     break;
   }
   case AST_INS_DECL_BYTE: {
-    size_t len = compiler->symbol_table.len;
-    compiler->symbol_table.keys[len] = ins.var.decl_byte.ident;
-    compiler->symbol_table.values[len] = compiler->constants++;
-    compiler->symbol_table.len++;
+    symbol_table_insert(compiler, ins.var.decl_byte.ident,
+                        compiler->constants++);
     emit(compiler, ins.var.decl_byte.byte);
     break;
   }
-  case AST_INS_MOV_R2R:
-    fprintf(stderr, "CANNOT COMPILE Mov R2R\n");
+  case AST_INS_JMP: {
+    uint32_t label_id = symbol_table_get(compiler, ins.var.jmp.label);
+    emit(compiler, label_id);
+    break;
+  }
+  case AST_INS_MOV_R2R: {
+    fprintf(stderr, "NYI - CANNOT COMPILE Mov R2R\n");
     exit(1);
     break;
-  case AST_INS_DECL_STR:
+  }
+  case AST_INS_DECL_STR: {
     fprintf(stderr, "UNREACHABLE - CANNOT COMPILE DECL STR\n");
     exit(1);
     break;
-  case AST_INS_SYSCALL:
+  }
+  case AST_INS_SYSCALL: {
     break;
+  }
   }
 }
 
-static void insert_symbol_table(Compiler *compiler, char *key, uint32_t val) {
-  size_t len = compiler->symbol_table.len;
-  compiler->symbol_table.keys[len] = key;
-  compiler->symbol_table.values[len] = val;
-  compiler->symbol_table.len++;
-}
-
-static void compile_decl_str_ins(Compiler *compiler, DeclStr ins) {
-  insert_symbol_table(compiler, ins.ident, compiler->constants++);
+static void compile_decl_str_ins(Compiler *compiler, DeclStrIns ins) {
+  symbol_table_insert(compiler, ins.ident, compiler->constants++);
 
   size_t str_len = strlen(ins.str);
   char *str = ins.str;
@@ -107,13 +122,12 @@ static void compile_decl_str_ins(Compiler *compiler, DeclStr ins) {
 }
 
 static void compile_label(Compiler *compiler, Label label) {
-  insert_symbol_table(compiler, label.name, compiler->bytesptr);
+  symbol_table_insert(compiler, label.name, compiler->bytesptr);
 }
 
 static void compile_elem(Compiler *compiler, CasmElement elem) {
   switch (elem.type) {
   case AST_LABEL:
-    compile_label(compiler, elem.var.label);
     break;
   case AST_INSTRUCTION:
     if (elem.var.ins.type != AST_INS_DECL_STR) {
