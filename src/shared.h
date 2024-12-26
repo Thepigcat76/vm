@@ -17,3 +17,10 @@ typedef enum {
   RA2,
   RA3,
 } Register;
+
+typedef enum {
+  BIN_OP_ADD,
+  BIN_OP_SUB,
+  BIN_OP_MUL,
+  BIN_OP_DIV,
+} BinOpType;

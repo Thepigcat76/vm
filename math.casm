@@ -1,3 +1,5 @@
+_data:
+    decl RES, 0
+
 _start:
-    mov 1, ra0
-    add 3, ra0
+    add 90, RES

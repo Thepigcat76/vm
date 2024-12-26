@@ -16,6 +16,11 @@ typedef enum {
   TOK_SYSCALL,
   TOK_CMP,
   TOK_JNE,
+  // MATH Instructions
+  TOK_ADD,
+  TOK_SUB,
+  TOK_MUL,
+  TOK_DIV,
 
   // Literals
   TOK_IDENT,

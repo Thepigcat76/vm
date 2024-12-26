@@ -149,7 +149,7 @@ int main(int argc, char **argv) {
   // clang-format on
 
   TEST(ASM_PARSER_DATA_SEC, {
-    char *file = read_file_to_string("tests/lexer_data.casm");
+    char *file = read_file_to_string("math.casm");
 
     if (file == NULL) {
       perror("Could not find specified file\n");

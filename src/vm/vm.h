@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../shared.h"
 #include <stdint.h>
 #include <stdio.h>
 
@@ -42,3 +43,9 @@ void decl(VirtualMachine *vm, uint8_t val);
 void cmp(VirtualMachine *vm, uint8_t val0, uint8_t val1);
 
 void dump(VirtualMachine *vm);
+
+void bin_op_i2r(VirtualMachine *vm, BinOpType type, uint8_t immediate,
+                uint8_t reg);
+
+void bin_op_i2m(VirtualMachine *vm, BinOpType type, uint8_t immediate,
+                uint64_t addr);

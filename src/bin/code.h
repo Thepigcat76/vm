@@ -12,6 +12,14 @@ typedef enum {
   OP_JMP,
   OP_CMP,
   OP_JNE,
+  OP_ADDI2R,
+  OP_SUBI2R,
+  OP_MULI2R,
+  OP_DIVI2R,
+  OP_ADDI2M,
+  OP_SUBI2M,
+  OP_MULI2M,
+  OP_DIVI2M,
 } Opcode;
 
 size_t ins_len(Opcode opcode);

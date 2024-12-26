@@ -25,6 +25,28 @@ Parser parser_new(Lexer *lexer) {
   };
 }
 
+VEC(CasmElement) parse_all(Parser *parser) {
+  VEC(CasmElement) vec = vec_new(CasmElement);
+  size_t input_len = strlen(parser->lexer->input);
+  while (parser->cur_tok.type != TOK_ILLEGAL) {
+    CasmElement elem = parse(parser);
+    vec_push_back(CasmElement, &vec, elem);
+  }
+  return vec;
+}
+
+static Register parse_reg(Parser *parser) {
+  char *str = parser->cur_tok.lit;
+  Register reg = -1;
+  for (size_t i = 0; i < REGISTER_COUNT; i++) {
+    if (strcmp(str, REGISTERS[i]) == 0) {
+      reg = (Register)i;
+      break;
+    }
+  }
+  return reg;
+}
+
 static Operand parse_operand(Parser *parser) {
   switch (parser->cur_tok.type) {
   case TOK_NUMBER: {
@@ -34,18 +56,13 @@ static Operand parse_operand(Parser *parser) {
     return (Operand){.type = OP_NUMBER, .var = {.number = num}};
   }
   case TOK_IDENT: {
-    char *str = parser->cur_tok.lit;
-    Register reg = -1;
-    for (size_t i = 0; i < REGISTER_COUNT; i++) {
-      if (strcmp(str, REGISTERS[i]) == 0) {
-        reg = (Register)i;
-      }
-    }
+    Register reg = parse_reg(parser);
     if (reg != -1) {
-      free(str);
+      free(parser->cur_tok.lit);
       return (Operand){.type = OP_REGISTER, .var = {.reg = reg}};
     } else {
-      return (Operand){.type = OP_CONST, .var = {.constant = str}};
+      return (Operand){.type = OP_CONST,
+                       .var = {.constant = parser->cur_tok.lit}};
     }
   }
   default: {
@@ -186,14 +203,30 @@ static CasmElement parse_jne(Parser *parser) {
       .var = {.ins = {.type = AST_INS_JNE, .var = {.jne = {.label = name}}}}};
 }
 
-VEC(CasmElement) parse_all(Parser *parser) {
-  VEC(CasmElement) vec = vec_new(CasmElement);
-  size_t input_len = strlen(parser->lexer->input);
-  while (parser->cur_tok.type != TOK_ILLEGAL) {
-    CasmElement elem = parse(parser);
-    vec_push_back(CasmElement, &vec, elem);
+static CasmElement parse_bin_op(Parser *parser, BinOpType bin_op_type) {
+  // Instruction name - cur tok is val
+  next_tok(parser);
+  uint8_t immediate = atoi(parser->cur_tok.lit);
+  // val - cur token is comma
+  next_tok(parser);
+  // comma - cur token is dest
+  next_tok(parser);
+  Operand operand = parse_operand(parser);
+  // dest - cur token is next tok
+  next_tok(parser);
+  Instruction ins;
+  if (operand.type == OP_REGISTER) {
+    ins = (Instruction){.type = AST_INS_BIN_I2R,
+                        .var = {.bin_i2r = {.type = bin_op_type,
+                                            .val0 = immediate,
+                                            .dest = operand.var.reg}}};
+  } else if (operand.type == OP_CONST) {
+    ins = (Instruction){.type = AST_INS_BIN_I2C,
+                        .var = {.bin_i2c = {.type = bin_op_type,
+                                            .val0 = immediate,
+                                            .ident = operand.var.constant}}};
   }
-  return vec;
+  return (CasmElement){.type = AST_INSTRUCTION, .var = {.ins = ins}};
 }
 
 CasmElement parse(Parser *parser) {
@@ -212,6 +245,14 @@ CasmElement parse(Parser *parser) {
     return parse_cmp(parser);
   case TOK_JNE:
     return parse_jne(parser);
+  case TOK_ADD:
+    return parse_bin_op(parser, BIN_OP_ADD);
+  case TOK_SUB:
+    return parse_bin_op(parser, BIN_OP_SUB);
+  case TOK_MUL:
+    return parse_bin_op(parser, BIN_OP_MUL);
+  case TOK_DIV:
+    return parse_bin_op(parser, BIN_OP_DIV);
   default:
     fprintf(stderr,
             "Error parsing token, invalid token that cannot be parsed: %s\n",
@@ -258,6 +299,9 @@ char *casm_element_to_string(CasmElement *casm_element) {
       STRINGIFY(AST_INS_JMP);
       STRINGIFY(AST_INS_JNE);
       STRINGIFY(AST_INS_CMP);
+      STRINGIFY(AST_INS_BIN_I2M);
+      STRINGIFY(AST_INS_BIN_I2R);
+      STRINGIFY(AST_INS_BIN_I2C);
     }
   }
   default: {

@@ -1,10 +1,22 @@
 #include "vm.h"
-#include "../shared.h"
 #include "../bin/mem.h"
+#include "../shared.h"
 
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+static void set_mem(VirtualMachine *vm, uint64_t addr, uint64_t val) {
+  if (addr >= DATA_MEM_START) {
+    vm->constants[addr - DATA_MEM_START] = val;
+    return;
+  } else if (addr >= STACK_MEM_START) {
+    vm->stack[addr - STACK_MEM_START] = val;
+    return;
+  }
+  fprintf(stderr, "Set mem - Invalid memory address: %zu\n", addr);
+  exit(1);
+}
 
 static uint64_t retrieve_mem(VirtualMachine *vm, uint64_t addr) {
   if (addr >= DATA_MEM_START) {
@@ -12,7 +24,7 @@ static uint64_t retrieve_mem(VirtualMachine *vm, uint64_t addr) {
   } else if (addr >= STACK_MEM_START) {
     return vm->stack[addr - STACK_MEM_START];
   }
-  fprintf(stderr, "Invalid memory address: %zu\n", addr);
+  fprintf(stderr, "Retr mem - Invalid memory address: %zu\n", addr);
   exit(1);
 }
 
@@ -46,9 +58,7 @@ void mov_m2r(VirtualMachine *vm, uint64_t addr, uint8_t reg) {
   vm->regs[reg] = addr;
 }
 
-void jump(VirtualMachine *vm, uint8_t label) {
-  vm->ip = label;
-}
+void jump(VirtualMachine *vm, uint8_t label) { vm->ip = label; }
 
 void jne(VirtualMachine *vm, uint8_t label) {
   if (!vm->regs[RA0]) {
@@ -74,6 +84,48 @@ void syscall(VirtualMachine *vm) {
 
 void decl(VirtualMachine *vm, uint8_t val) {
   vm->constants[vm->constans_count++] = val;
+}
+
+void bin_op_i2r(VirtualMachine *vm, BinOpType type, uint8_t immediate,
+                uint8_t reg) {
+  uint64_t dest = vm->regs[reg];
+  uint64_t result = 0;
+  switch (type) {
+  case BIN_OP_ADD:
+    result = dest + immediate;
+    break;
+  case BIN_OP_SUB:
+    result = dest - immediate;
+    break;
+  case BIN_OP_MUL:
+    result = dest * immediate;
+    break;
+  case BIN_OP_DIV:
+    result = dest / immediate;
+    break;
+  }
+  vm->regs[reg] = result;
+}
+
+void bin_op_i2m(VirtualMachine *vm, BinOpType type, uint8_t immediate,
+                uint64_t addr) {
+  uint64_t dest = retrieve_mem(vm, addr);
+  uint64_t result = 0;
+  switch (type) {
+  case BIN_OP_ADD:
+    result = dest + immediate;
+    break;
+  case BIN_OP_SUB:
+    result = dest - immediate;
+    break;
+  case BIN_OP_MUL:
+    result = dest * immediate;
+    break;
+  case BIN_OP_DIV:
+    result = dest / immediate;
+    break;
+  }
+  set_mem(vm, addr, result);
 }
 
 static char *reg_to_string(int num) {

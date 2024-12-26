@@ -29,6 +29,11 @@ Lexer lexer_new(char *input) {
   create_token(TOK_JMP, "jmp");
   create_token(TOK_CMP, "cmp");
   create_token(TOK_JNE, "jne");
+  // MATH
+  create_token(TOK_ADD, "add");
+  create_token(TOK_SUB, "sub");
+  create_token(TOK_MUL, "mul");
+  create_token(TOK_DIV, "div");
   return (Lexer){
       .input = input,
       .cur_pos = 0,

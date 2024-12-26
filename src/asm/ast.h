@@ -39,11 +39,29 @@ make_node(DeclStrIns, {
 
 make_node(JmpIns, { char *label; });
 
-make_node(JNEIns, { char *label; });
+make_node(JNeIns, { char *label; });
 
 make_node(CmpIns, {
   uint8_t val0;
   uint8_t val1;
+});
+
+make_node(BinOpI2R, {
+  BinOpType type;
+  uint8_t val0;
+  Register dest;
+});
+
+make_node(BinOpI2M, {
+  BinOpType type;
+  uint8_t val0;
+  uint64_t addr;
+});
+
+make_node(BinOpI2C, {
+  BinOpType type;
+  uint8_t val0;
+  char *ident;
 });
 
 typedef struct {
@@ -57,6 +75,9 @@ typedef struct {
     AST_INS_JMP,
     AST_INS_CMP,
     AST_INS_JNE,
+    AST_INS_BIN_I2R,
+    AST_INS_BIN_I2M,
+    AST_INS_BIN_I2C,
   } type;
   union {
     MovI2RIns mov_i2r;
@@ -67,7 +88,10 @@ typedef struct {
     DeclStrIns decl_str;
     JmpIns jmp;
     CmpIns cmp;
-    JNEIns jne;
+    JNeIns jne;
+    BinOpI2R bin_i2r;
+    BinOpI2M bin_i2m;
+    BinOpI2C bin_i2c;
   } var;
 } Instruction;
 

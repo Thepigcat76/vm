@@ -19,5 +19,15 @@ size_t ins_len(Opcode opcode) {
     return 3;
   case OP_DECL_BYTE:
     return 2;
+  case OP_ADDI2R:
+  case OP_SUBI2R:
+  case OP_MULI2R:
+  case OP_DIVI2R:
+    return 3;
+  case OP_ADDI2M:
+  case OP_SUBI2M:
+  case OP_MULI2M:
+  case OP_DIVI2M:
+    return 2 + sizeof(uint64_t);
   }
 }

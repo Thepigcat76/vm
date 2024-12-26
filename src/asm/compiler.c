@@ -34,6 +34,42 @@ Opcode ins_opcode(Instruction ins) {
     return OP_JNE;
   case AST_INS_CMP:
     return OP_CMP;
+  case AST_INS_BIN_I2R: {
+    switch (ins.var.bin_i2r.type) {
+    case BIN_OP_ADD:
+      return OP_ADDI2R;
+    case BIN_OP_SUB:
+      return OP_SUBI2R;
+    case BIN_OP_MUL:
+      return OP_MULI2R;
+    case BIN_OP_DIV:
+      return OP_DIVI2R;
+    }
+  }
+  case AST_INS_BIN_I2M: {
+    switch (ins.var.bin_i2m.type) {
+    case BIN_OP_ADD:
+      return OP_ADDI2M;
+    case BIN_OP_SUB:
+      return OP_SUBI2M;
+    case BIN_OP_MUL:
+      return OP_MULI2M;
+    case BIN_OP_DIV:
+      return OP_DIVI2M;
+    }
+  }
+  case AST_INS_BIN_I2C: {
+    switch (ins.var.bin_i2c.type) {
+    case BIN_OP_ADD:
+      return OP_ADDI2M;
+    case BIN_OP_SUB:
+      return OP_SUBI2M;
+    case BIN_OP_MUL:
+      return OP_MULI2M;
+    case BIN_OP_DIV:
+      return OP_DIVI2M;
+    }
+  }
   case AST_INS_DECL_STR:
     fprintf(stderr, "Tried to get opcode for AST_INS_DECL_STR\n");
     exit(1);
@@ -77,6 +113,14 @@ static void unpack_uint64(uint64_t val, uint8_t bytes[sizeof(uint64_t)]) {
   }
 }
 
+static void emit_uint64(Compiler *compiler, uint64_t val) {
+  uint8_t bytes[sizeof(uint64_t)];
+  unpack_uint64(val, bytes);
+  for (size_t i = 0; i < sizeof(uint64_t); i++) {
+    emit(compiler, bytes[i]);
+  }
+}
+
 static void compile_ins(Compiler *compiler, Instruction ins) {
   emit_op(compiler, ins);
 
@@ -89,11 +133,7 @@ static void compile_ins(Compiler *compiler, Instruction ins) {
   case AST_INS_MOV_C2R: {
     uint64_t addr =
         DATA_MEM_START + symbol_table_get(compiler, ins.var.mov_c2r.ident);
-    uint8_t bytes[sizeof(uint64_t)];
-    unpack_uint64(addr, bytes);
-    for (size_t i = 0; i < sizeof(uint64_t); i++) {
-      emit(compiler, bytes[i]);
-    }
+    emit_uint64(compiler, addr);
     emit(compiler, ins.var.mov_c2r.reg);
     break;
   }
@@ -118,6 +158,28 @@ static void compile_ins(Compiler *compiler, Instruction ins) {
     uint8_t val1 = ins.var.cmp.val1;
     emit(compiler, val0);
     emit(compiler, val1);
+    break;
+  }
+  case AST_INS_BIN_I2R: {
+    uint8_t val0 = ins.var.bin_i2r.val0;
+    Register dest = ins.var.bin_i2r.dest;
+    emit(compiler, val0);
+    emit(compiler, dest);
+    break;
+  }
+  case AST_INS_BIN_I2M: {
+    uint8_t val0 = ins.var.bin_i2m.val0;
+    uint64_t val1 = ins.var.bin_i2m.addr;
+    emit(compiler, val0);
+    emit_uint64(compiler, val1);
+    break;
+  }
+  case AST_INS_BIN_I2C: {
+    uint64_t addr =
+        DATA_MEM_START + symbol_table_get(compiler, ins.var.bin_i2c.ident);
+    uint8_t val0 = ins.var.bin_i2c.val0;
+    emit(compiler, val0);
+    emit_uint64(compiler, addr);
     break;
   }
   case AST_INS_MOV_R2R: {
