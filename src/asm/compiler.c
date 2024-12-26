@@ -1,5 +1,6 @@
 #include "compiler.h"
 #include "../bin/code.h"
+#include "../bin/mem.h"
 #include "ast.h"
 
 #include <stdbool.h>
@@ -22,7 +23,7 @@ Opcode ins_opcode(Instruction ins) {
   case AST_INS_MOV_R2R:
     return OP_MOVR2R;
   case AST_INS_MOV_C2R:
-    return OP_MOVC2R;
+    return OP_MOVM2R;
   case AST_INS_SYSCALL:
     return OP_SYSCALL;
   case AST_INS_DECL_BYTE:
@@ -47,8 +48,7 @@ static void emit_op(Compiler *compiler, Instruction ins) {
   emit(compiler, ins_opcode(ins));
 }
 
-void symbol_table_insert(Compiler *compiler, char *key,
-                                uint32_t val) {
+void symbol_table_insert(Compiler *compiler, char *key, uint32_t val) {
   size_t len = compiler->symbol_table.len;
   compiler->symbol_table.keys[len] = key;
   compiler->symbol_table.values[len] = val;
@@ -71,6 +71,12 @@ static uint32_t symbol_table_get(Compiler *compiler, char *key) {
   return compiler->symbol_table.values[index];
 }
 
+static void unpack_uint64(uint64_t val, uint8_t bytes[sizeof(uint64_t)]) {
+  for (size_t i = 0; i < sizeof(uint64_t); i++) {
+    bytes[i] = val >> (i * 8);
+  }
+}
+
 static void compile_ins(Compiler *compiler, Instruction ins) {
   emit_op(compiler, ins);
 
@@ -81,8 +87,13 @@ static void compile_ins(Compiler *compiler, Instruction ins) {
     break;
   }
   case AST_INS_MOV_C2R: {
-    uint32_t const_id = symbol_table_get(compiler, ins.var.mov_c2r.ident);
-    emit(compiler, const_id);
+    uint64_t addr =
+        DATA_MEM_START + symbol_table_get(compiler, ins.var.mov_c2r.ident);
+    uint8_t bytes[sizeof(uint64_t)];
+    unpack_uint64(addr, bytes);
+    for (size_t i = 0; i < sizeof(uint64_t); i++) {
+      emit(compiler, bytes[i]);
+    }
     emit(compiler, ins.var.mov_c2r.reg);
     break;
   }

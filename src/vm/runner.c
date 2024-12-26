@@ -5,6 +5,14 @@
 
 #include <stdint.h>
 
+static uint64_t pack_uint64(uint8_t bytes[8]) {
+  uint64_t val = 0;
+  for (size_t i = 0; i < sizeof(uint64_t); i++) {
+    val |= (bytes[i]) << (i * 8);
+  }
+  return val;
+}
+
 static void run_ins(VirtualMachine *vm, uint8_t *ins_bytes,
                     size_t instruction_len) {
   uint8_t opcode = ins_bytes[0];
@@ -17,8 +25,13 @@ static void run_ins(VirtualMachine *vm, uint8_t *ins_bytes,
     mov_r2r(vm, ins_bytes[1], ins_bytes[2]);
     break;
   }
-  case OP_MOVC2R: {
-    mov_c2r(vm, ins_bytes[1], ins_bytes[2]);
+  case OP_MOVM2R: {
+    uint8_t bytes[8];
+    for (size_t i = 0; i < sizeof(uint64_t); i++) {
+      bytes[i] = ins_bytes[i + 1];
+    }
+    uint64_t addr = pack_uint64(bytes);
+    mov_m2r(vm, addr, ins_bytes[sizeof(uint64_t) + 1]);
     break;
   }
   case OP_SYSCALL: {
@@ -63,5 +76,5 @@ void run_asm(uint8_t *byte_code, size_t byte_code_len) {
     run_ins(&vm, bytes, instruction_len);
   }
 
-  //dump(&vm);
+  dump(&vm);
 }

@@ -29,7 +29,7 @@ void mov_i2r(VirtualMachine *vm, uint8_t immediate, uint8_t reg);
 
 void mov_r2r(VirtualMachine *vm, uint8_t reg0, uint8_t reg1);
 
-void mov_c2r(VirtualMachine *vm, uint8_t constant, uint8_t reg);
+void mov_m2r(VirtualMachine *vm, uint64_t addr, uint8_t reg);
 
 void syscall(VirtualMachine *vm);
 

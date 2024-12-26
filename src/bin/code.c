@@ -9,8 +9,9 @@ size_t ins_len(Opcode opcode) {
     return 1;
   case OP_MOVI2R:
   case OP_MOVR2R:
-  case OP_MOVC2R:
     return 3;
+  case OP_MOVM2R:
+    return 2 + sizeof(uint64_t);
   case OP_JNE:
   case OP_JMP:
     return 2;

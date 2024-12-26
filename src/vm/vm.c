@@ -1,9 +1,20 @@
 #include "vm.h"
 #include "../shared.h"
+#include "../bin/mem.h"
 
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+static uint64_t retrieve_mem(VirtualMachine *vm, uint64_t addr) {
+  if (addr >= DATA_MEM_START) {
+    return vm->constants[addr - DATA_MEM_START];
+  } else if (addr >= STACK_MEM_START) {
+    return vm->stack[addr - STACK_MEM_START];
+  }
+  fprintf(stderr, "Invalid memory address: %zu\n", addr);
+  exit(1);
+}
 
 static void syscall_exit(VirtualMachine *vm) {
   uint64_t exit_code = vm->regs[RA1];
@@ -15,8 +26,8 @@ static void syscall_print(VirtualMachine *vm) {
   uint64_t byte_len = vm->regs[RA2];
 
   char msg[byte_len];
-  for (uint64_t i = byte_ptr; i < byte_ptr + byte_len; i++) {
-    msg[i - byte_ptr] = (char)vm->constants[i];
+  for (uint64_t i = 0; i < byte_len; i++) {
+    msg[i] = (char)retrieve_mem(vm, byte_ptr + i);
   }
   msg[byte_ptr + byte_len] = '\0';
   puts(msg);
@@ -31,8 +42,8 @@ void mov_r2r(VirtualMachine *vm, uint8_t reg0, uint8_t reg1) {
 }
 
 // TODO: Constant uint8_t needs to store info whether it is stack or constant
-void mov_c2r(VirtualMachine *vm, uint8_t constant, uint8_t reg) {
-  vm->regs[reg] = constant;
+void mov_m2r(VirtualMachine *vm, uint64_t addr, uint8_t reg) {
+  vm->regs[reg] = addr;
 }
 
 void jump(VirtualMachine *vm, uint8_t label) {

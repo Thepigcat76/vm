@@ -7,10 +7,3 @@ _start:
     mov MSG, ra1
     mov MSG_LEN, ra2
     syscall
-    cmp 1, 0
-    jne exit
-
-exit:
-    mov 0, ra0
-    mov 0, ra1
-    syscall
